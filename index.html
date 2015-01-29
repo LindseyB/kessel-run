@@ -102,6 +102,8 @@
 
             createAsteroid();
             asteroids.forEachExists(screenWrap, this);
+
+            game.physics.arcade.overlap(bullets, asteroids, collisionHandler, null, this);
         }
 
         function render() {
@@ -134,7 +136,7 @@
                     asteroid.scale.x = scale;
                     asteroid.scale.y = scale;
                     game.physics.arcade.velocityFromRotation(asteroid.rotation, 10, asteroid.body.velocity);
-                    asteroidTime = game.time.now + 10000;
+                    asteroidTime = game.time.now + 1000;
                 }
             }
         }
@@ -151,6 +153,11 @@
             } else if (sprite.y > game.height) {
                 sprite.y = 0;
             }
+        }
+
+        function collisionHandler (bullet, asteroid){
+            bullet.kill();
+            asteroid.kill();
         }
 
     };
