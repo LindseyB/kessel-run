@@ -17,11 +17,14 @@
         function preload() {
             game.load.image('logo', 'assets/title.png');
             game.load.image('ship', 'assets/ship.png');
-            game.load.image('asteroid', 'assets/asteroid.png')
-            game.load.image('background', 'assets/background.png')
+            game.load.image('asteroid', 'assets/asteroid.png');
+            game.load.image('background', 'assets/background.png');
+            game.load.image('stars', 'assets/stars.png');
         }
 
+        var bg;
         var ship;
+        var stars;
 
         function create() {
             game.renderer.clearBeforeRender = false;
@@ -29,8 +32,8 @@
 
             game.physics.startSystem(Phaser.Physics.ARCADE)
 
-            var bg = game.add.sprite(game.world.centerX, game.world.centerY, 'background');
-            bg.anchor.setTo(0.5, 0.5);
+            bg = game.add.tileSprite(0, 0, 800, 600, 'background');
+            stars = game.add.tileSprite(0, 0, 800, 600, 'stars');
 
             ship = game.add.sprite(game.world.centerX, game.world.centerY, 'ship');
             ship.anchor.setTo(0.5, 0.5);
@@ -48,6 +51,9 @@
         }
 
         function update() {
+            stars.tilePosition.x += 0.5;
+            bg.tilePosition.x -= 0.5;
+
             if (cursors.up.isDown || game.input.keyboard.isDown(Phaser.Keyboard.W)) {
                 game.physics.arcade.accelerationFromRotation(ship.rotation, 200, ship.body.acceleration);
             } else {
