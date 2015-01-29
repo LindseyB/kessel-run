@@ -20,11 +20,17 @@
             game.load.image('asteroid', 'assets/asteroid.png');
             game.load.image('background', 'assets/background.png');
             game.load.image('stars', 'assets/stars.png');
+            game.load.image('bullet', 'assets/bullet.png');
+            game.load.audio('bulletSound', ['assets/audio/Pew_Pew-DKnight556.mp3']);
         }
 
         var bg;
         var ship;
         var stars;
+        var bullet;
+        var bullets;
+        var bulletTime = 0;
+        var bulletSound;
 
         function create() {
             game.renderer.clearBeforeRender = false;
@@ -41,6 +47,15 @@
             game.physics.enable(ship, Phaser.Physics.ARCADE);
             ship.body.drag.set(100);
             ship.body.maxVelocity.set(400);
+
+            bullets = game.add.group();
+            bullets.enableBody = true;
+            bullets.physicsBodyType = Phaser.Physics.ARCADE;
+            bullets.createMultiple(20, 'bullet');
+            bullets.setAll('anchor.x', 0.5);
+            bullets.setAll('anchor.y', 0.5);
+
+            bulletSound = game.add.audio('bulletSound');
 
             cursors = game.input.keyboard.createCursorKeys();
             game.input.keyboard.addKeyCapture([ 
@@ -68,11 +83,30 @@
                 ship.body.angularVelocity = 0;
             }
 
+            if (game.input.keyboard.isDown(Phaser.Keyboard.SPACEBAR)) {
+                fireBullet();
+            }
+
             screenWrap(ship);
         }
 
         function render() {
 
+        }
+
+        function fireBullet () {
+            if (game.time.now > bulletTime) {
+                bullet = bullets.getFirstExists(false);
+
+                if (bullet) {
+                    bulletSound.play('');
+                    bullet.reset(ship.body.x + 64, ship.body.y + 48);
+                    bullet.lifespan = 2000;
+                    bullet.rotation = ship.rotation;
+                    game.physics.arcade.velocityFromRotation(ship.rotation, 400, bullet.body.velocity);
+                    bulletTime = game.time.now + 200;
+                }
+            }
         }
 
         function screenWrap(sprite) {
