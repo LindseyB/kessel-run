@@ -21,7 +21,8 @@
             game.load.image('background', 'assets/background.png');
             game.load.image('stars', 'assets/stars.png');
             game.load.image('bullet', 'assets/bullet.png');
-            game.load.audio('bulletSound', ['assets/audio/Pew_Pew-DKnight556.mp3']);
+            game.load.audio('bulletSound', 'assets/audio/Pew_Pew-DKnight556.mp3');
+            game.load.image('asteroid', 'assets/asteroid.png')
         }
 
         var bg;
@@ -31,6 +32,9 @@
         var bullets;
         var bulletTime = 0;
         var bulletSound;
+        var asteroid;
+        var asteroids;
+        var asteroidTime = 0;
 
         function create() {
             game.renderer.clearBeforeRender = false;
@@ -54,6 +58,13 @@
             bullets.createMultiple(20, 'bullet');
             bullets.setAll('anchor.x', 0.5);
             bullets.setAll('anchor.y', 0.5);
+
+            asteroids = game.add.group();
+            asteroids.enableBody = true;
+            asteroids.physicsBodyType = Phaser.Physics.ARCADE;
+            asteroids.createMultiple(5, 'asteroid');
+            asteroids.setAll('anchor.x', 0.5);
+            asteroids.setAll('anchor.y', 0.5);
 
             bulletSound = game.add.audio('bulletSound');
 
@@ -88,23 +99,42 @@
             }
 
             screenWrap(ship);
+
+            createAsteroid();
+            asteroids.forEachExists(screenWrap, this);
         }
 
         function render() {
 
         }
 
-        function fireBullet () {
+        function fireBullet() {
             if (game.time.now > bulletTime) {
                 bullet = bullets.getFirstExists(false);
 
                 if (bullet) {
-                    bulletSound.play('');
+                    bulletSound.play();
                     bullet.reset(ship.body.x + 64, ship.body.y + 48);
                     bullet.lifespan = 2000;
                     bullet.rotation = ship.rotation;
                     game.physics.arcade.velocityFromRotation(ship.rotation, 400, bullet.body.velocity);
                     bulletTime = game.time.now + 200;
+                }
+            }
+        }
+
+        function createAsteroid() {
+            if (game.time.now > asteroidTime) {
+                asteroid = asteroids.getFirstExists(false);
+
+                if (asteroid) {
+                    asteroid.reset(Math.floor((Math.random() * game.width) + 1), Math.floor((Math.random() * game.height) + 1));
+                    asteroid.rotation = Math.floor((Math.random() * 360) + 0);
+                    var scale = (Math.random() * (0.7 - 0.3) + 0.3)
+                    asteroid.scale.x = scale;
+                    asteroid.scale.y = scale;
+                    game.physics.arcade.velocityFromRotation(asteroid.rotation, 10, asteroid.body.velocity);
+                    asteroidTime = game.time.now + 10000;
                 }
             }
         }
