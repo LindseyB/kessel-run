@@ -130,7 +130,7 @@
                 asteroid = asteroids.getFirstExists(false);
 
                 if (asteroid) {
-                    asteroid.reset(Math.floor((Math.random() * game.width) + 1), Math.floor((Math.random() * game.height) + 1));
+                    asteroid.reset(Math.floor((Math.random() * game.width) + 1), Math.floor(Math.random() * 2)*game.height);
                     asteroid.rotation = Math.floor((Math.random() * 360) + 0);
                     var scale = (Math.random() * (0.7 - 0.3) + 0.3)
                     asteroid.scale.x = scale;
