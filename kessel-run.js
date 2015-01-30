@@ -230,7 +230,7 @@ window.onload = function() {
         }
     };
 
-    var game = new Phaser.Game(800, 600, Phaser.AUTO, '');
+    var game = new Phaser.Game(800, 600, Phaser.AUTO, 'kessel-run-container');
 
     game.state.add('StateTitle', KRGame.StateTitle);
     game.state.add('StateAsteroids', KRGame.StateAsteroids);
