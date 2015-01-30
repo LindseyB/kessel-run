@@ -35,6 +35,10 @@
         var asteroid;
         var asteroids;
         var asteroidTime = 0;
+        var lives;
+        var hurt = false;
+        var hurtTime = 0;
+        var hurtDuration = 0;
 
         function create() {
             game.renderer.clearBeforeRender = false;
@@ -68,6 +72,16 @@
 
             bulletSound = game.add.audio('bulletSound');
 
+            lives = game.add.group();
+            for (var i = 0; i < 3; i++) {
+                var life = lives.create(game.world.width - 100 + (30 * i), 60, 'ship');
+                life.anchor.setTo(0.5, 0.5);
+                life.angle = 90;
+                life.scale.x = 0.2;
+                life.scale.y = 0.2;
+                life.alpha = 0.8
+            }
+
             cursors = game.input.keyboard.createCursorKeys();
             game.input.keyboard.addKeyCapture([ 
                 Phaser.Keyboard.SPACEBAR,
@@ -99,11 +113,13 @@
             }
 
             screenWrap(ship);
+            animateHurt();
 
             createAsteroid();
             asteroids.forEachExists(screenWrap, this);
 
             game.physics.arcade.overlap(bullets, asteroids, collisionHandler, null, this);
+            game.physics.arcade.overlap(asteroids, ship, playerHitHander, null, this);
         }
 
         function render() {
@@ -158,6 +174,30 @@
         function collisionHandler (bullet, asteroid){
             bullet.kill();
             asteroid.kill();
+        }
+
+        function playerHitHander(ship, asteroid){
+            asteroid.kill();
+            live = lives.getFirstAlive();
+            if (live) { live.kill(); }
+            hurt = true;
+            hurtDuration = game.time.now + 800;
+        }
+
+        function animateHurt(){
+            if (hurt && game.time.now > hurtTime) {
+                if(ship.alpha == 1){
+                    ship.alpha = 0.5;
+                } else {
+                    ship.alpha = 1;
+                }
+                hurtTime = game.time.now + 150;
+            }
+
+            if (hurt && game.time.now > hurtDuration) {
+                hurt = false;
+                ship.alpha = 1;
+            }
         }
 
     };
