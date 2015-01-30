@@ -4,6 +4,9 @@ window.onload = function() {
 
     KRGame.StateTitle = function (game) {
         this.title;
+        this.text;
+        this.style;
+        this.timer = 0;
     };
 
     KRGame.StateTitle.prototype = {
@@ -14,12 +17,23 @@ window.onload = function() {
         create: function () {
             this.title = game.add.sprite(game.world.centerX, game.world.centerY, 'title');
             this.title.anchor.setTo(0.5, 0.5);
+
             this.game.input.keyboard.addKeyCapture([Phaser.Keyboard.SPACEBAR]);
+            
+            this.style = { font: "40px Monospace", fill: "#66ff66", align: "center" };
+            this.text = game.add.text(game.world.centerX, 500, "Press Spacebar", this.style);
+            this.text.anchor.set(0.5);
         },
 
         update: function() {
             if (game.input.keyboard.isDown(Phaser.Keyboard.SPACEBAR)) {
                 this.gotoStateAsteroids();
+            }
+
+            this.timer += this.game.time.elapsed;
+            if (this.timer >= 500) {
+                this.timer = 0;
+                this.text.visible = !this.text.visible;
             }
         },
 
