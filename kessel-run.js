@@ -11,7 +11,7 @@ window.onload = function() {
     KRGame.StateTitle.prototype = {
         preload: function () {
             this.game.load.image('title', 'assets/title.png');
-            this.game.load.bitmapFont('dosfont', 'assets/font/font.png', 'assets/font/font.fnt');
+            this.game.load.bitmapFont('dosfont', 'assets/font/dos.png', 'assets/font/dos.fnt');
         },
 
         create: function () {
