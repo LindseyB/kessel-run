@@ -68,8 +68,10 @@ window.onload = function() {
             this.game.load.image('background', 'assets/background.png');
             this.game.load.image('stars', 'assets/stars.png');
             this.game.load.image('bullet', 'assets/bullet.png');
-            this.game.load.audio('bulletSound', 'assets/audio/170161__timgormly__8-bit-laser.mp3');
             this.game.load.image('asteroid', 'assets/asteroid.png');
+
+            this.game.load.audio('bulletSound', 'assets/audio/170161__timgormly__8-bit-laser.mp3');
+            this.game.load.audio('explosionSound', 'assets/audio/170144__timgormly__8-bit-explosion2.mp3');
         },
 
         create: function() {
@@ -103,6 +105,7 @@ window.onload = function() {
             this.asteroids.setAll('anchor.y', 0.5);
 
             this.bulletSound = game.add.audio('bulletSound');
+            this.explosionSound = game.add.audio('explosionSound');
 
             this.lives = this.game.add.group();
             for (var i = 0; i < 3; i++) {
@@ -200,6 +203,7 @@ window.onload = function() {
         },
 
         collisionHandler: function(bullet, asteroid) {
+            this.explosionSound.play();
             bullet.kill();
             asteroid.kill();            
         },
