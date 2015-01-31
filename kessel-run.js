@@ -130,6 +130,7 @@ window.onload = function() {
     KRGame.StateCaptain = function (game) {
         this.bg;
         this.stars;
+        this.party;
         this.text;
         this.cursor;
         this.choiceText;
@@ -142,21 +143,25 @@ window.onload = function() {
             this.game.load.bitmapFont('dosfont', 'assets/font/dos.png', 'assets/font/dos.fnt');
             this.game.load.image('background', 'assets/background.png');
             this.game.load.image('stars', 'assets/stars.png');
+            this.game.load.image('party', 'assets/party.png');
         },
 
         create: function() {
             this.bg = this.game.add.tileSprite(0, 0, 800, 600, 'background');
             this.stars = this.game.add.tileSprite(0, 0, 800, 600, 'stars');
+            this.party = this.game.add.sprite(0,0, 'party');
 
-            this.text = this.game.add.bitmapText(100, 100, 'dosfont','What is the name of you captain?', 32);
-            this.cursor = this.game.add.bitmapText(100, 132, 'dosfont', '_', 32);
-            this.choiceText = this.game.add.bitmapText(100, 132, 'dosfont', '', 32);
+            this.text = this.game.add.bitmapText(100, 305, 'dosfont','What is the name of you captain?', 32);
+            this.cursor = this.game.add.bitmapText(100, 337, 'dosfont', '_', 32);
+            this.choiceText = this.game.add.bitmapText(100, 337, 'dosfont', '', 32);
 
-            game.input.keyboard.addKeyCapture([ Phaser.Keyboard.BACKSPACE, Phaser.Keyboard.ENTER ]);
+            game.input.keyboard.addKeyCapture([ Phaser.Keyboard.BACKSPACE, Phaser.Keyboard.ENTER, Phaser.Keyboard.SPACEBAR ]);
             this.enter = game.input.keyboard.addKey(Phaser.Keyboard.ENTER);
             this.enter.onDown.add(this.submitChoice, this);
             this.backspace = game.input.keyboard.addKey(Phaser.Keyboard.BACKSPACE);
             this.backspace.onDown.add(this.deleteChoice, this);
+            this.spacebar = game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
+            this.spacebar.onDown.add(this.addSpace, this);
 
             game.input.keyboard.addCallbacks(this, null, null, this.keyPress);
         },
@@ -175,20 +180,27 @@ window.onload = function() {
         keyPress: function(char) {
             this.name += char;
             this.choiceText.setText(this.name);
-            this.cursor.x += 20;
+            
+            this.cursor.x = 100 + this.choiceText.width;
+            if (this.name.length > 0) { this.cursor.x += 26; }
         },
 
         deleteChoice: function() {
             this.name = this.name.substring(0, this.name.length - 1);
             this.choiceText.setText(this.name);
-            this.cursor.x -= 20;
-
-            if(this.name == "") { this.cursor.x = 100; }
+            this.cursor.x = 100 + this.choiceText.width;
+            if (this.name.length > 0) { this.cursor.x += 26; }
         },
 
         submitChoice: function() {
             name = this.name;
             this.state.start('StateAsteroids');
+        },
+
+        addSpace: function() {
+            this.name += ' ';
+            this.choiceText.setText(this.name);
+            //this.cursor.x += 20;            
         }  
     };
 
