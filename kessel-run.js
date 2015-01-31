@@ -1,6 +1,7 @@
 window.onload = function() {
     var job;
     var name;
+    var money = 10000;
     var KRGame = {};
 
     KRGame.StateTitle = function (game) {
@@ -279,7 +280,7 @@ window.onload = function() {
                 this.cursor.y += 32;
                 this.cursor.x = 132;
             } else {
-                this.state.start('StateAsteroids');
+                this.state.start('StateShop');
             }
         },
 
@@ -287,6 +288,92 @@ window.onload = function() {
             this.members[this.current_member] += ' ';
             this.choiceText[this.current_member].setText((this.current_member+1)+". " + this.members[this.current_member]);
             this.cursor.x = 126 + this.choiceText[this.current_member].width;
+        }
+    };
+
+    KRGame.StateShop = {};
+
+    KRGame.StateShop = function (game) {
+        this.solar_amount = 0;
+        this.food_amount = 0;
+        this.clothing_amount = 0;
+        this.parts_amount = 0;
+        this.spice_amount = 0;
+
+        this.solar_text;
+        this.food_text;
+        this.clothing_text;
+        this.parts_text;
+        this.spice_text;
+
+        this.total = 0;
+        this.total_text;
+    };
+
+    KRGame.StateShop.prototype = {
+        preload: function() {
+            this.game.load.image('merchant', 'assets/merchant.png');
+            this.game.load.image('arrow', 'assets/arrow.png');
+            this.game.load.bitmapFont('dosfont', 'assets/font/dos.png', 'assets/font/dos.fnt');
+        },
+
+        create: function() {
+            this.merchant = this.game.add.sprite(100, 300, 'merchant');
+            this.merchant.anchor.setTo(0.5, 0.5);
+            this.merchant.scale.x = 0.5;
+            this.merchant.scale.y = 0.5;
+
+            this.game.add.bitmapText(200, 20, 'dosfont','Wimateeka\'s Shoppe', 40);
+            this.game.add.bitmapText(200, 70, 'dosfont', '1. Solar Panels @ $500', 32);
+            this.game.add.bitmapText(200, 132, 'dosfont','2. Food         @ $10', 32);
+            this.game.add.bitmapText(200, 134+60, 'dosfont','3. Clothing     @ $40', 32);
+            this.game.add.bitmapText(200, 166+90, 'dosfont','4. Spare Parts  @ $100', 32);
+            this.game.add.bitmapText(200, 198+120, 'dosfont','5. Spice        @ $100', 32);
+
+            this.solar_text = this.game.add.bitmapText(600, 70, 'dosfont', '0', 32);
+            this.solar_up = this.game.add.sprite(590, 55, 'arrow');
+            this.solar_up.inputEnabled = true;
+            this.solar_up.events.onInputOver.add(this.fade, this);
+            this.solar_up.events.onInputDown.add(this.solarUp, this);
+            this.solar_up.events.onInputOut.add(this.fade, this);
+            this.solar_down = this.game.add.sprite(608, 100, 'arrow');
+            this.solar_down.anchor.setTo(0.5, 0.5);
+            this.solar_down.angle = 180;
+            this.solar_down.inputEnabled = true;
+            this.solar_down.events.onInputOver.add(this.fade, this);
+            this.solar_down.events.onInputDown.add(this.solarDown, this);
+            this.solar_down.events.onInputOut.add(this.fade, this);
+
+            this.money = this.game.add.bitmapText(200, 450, 'dosfont','Your Funds: $'+money.toFixed(2), 32);
+            this.total_text = this.game.add.bitmapText(200, 500, 'dosfont','     Total: $0.00', 32);
+        },
+
+        update: function() {
+
+        },
+
+        solarUp: function(sprite, pointer) {
+            this.solar_amount++;
+            this.solar_text.setText(this.solar_amount);
+            this.total += 500;
+            this.total_text.setText("     Total: $" + this.total.toFixed(2));
+        },
+
+        solarDown: function(sprite, pointer) {
+            if(this.solar_amount > 0 ) {
+                this.solar_amount--;
+                this.solar_text.setText(this.solar_amount)
+                this.total -= 500;
+                this.total_text.setText("     Total: $" + this.total.toFixed(2));
+            }
+        },
+
+        fade: function(sprite, pointer) {
+            if(sprite.alpha != 0.8) {
+                sprite.alpha = 0.8;
+            } else {
+                sprite.alpha = 1;
+            }
         }
     };
 
@@ -488,6 +575,7 @@ window.onload = function() {
     game.state.add('StateJob', KRGame.StateJob);
     game.state.add('StateCaptain', KRGame.StateCaptain);
     game.state.add('StateParty', KRGame.StateParty);
+    game.state.add('StateShop', KRGame.StateShop);
     game.state.add('StateAsteroids', KRGame.StateAsteroids);
 
     game.state.start('StateTitle');
