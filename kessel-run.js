@@ -58,11 +58,15 @@ window.onload = function() {
             this.game.load.bitmapFont('dosfont', 'assets/font/dos.png', 'assets/font/dos.fnt');
             this.game.load.image('background', 'assets/background.png');
             this.game.load.image('stars', 'assets/stars.png');
+            this.game.load.image('divider', 'assets/divider.png');
         },
 
         create: function() {
             this.bg = this.game.add.tileSprite(0, 0, 800, 600, 'background');
             this.stars = this.game.add.tileSprite(0, 0, 800, 600, 'stars');
+
+            game.add.sprite(0, 10, 'divider');
+            game.add.sprite(0, 545, 'divider');
 
             this.text = this.game.add.bitmapText(100, 100, 'dosfont','You May: \n\n1. Be an investment banker from\n   New Boston\n2. Be a doctor from Osiris\n3. Be a space cowboy from Mos Eisley\n\nWhat is your choice?', 32);
             this.cursor = this.game.add.bitmapText(450, 320, 'dosfont', '_', 32);
