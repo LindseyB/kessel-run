@@ -1,5 +1,6 @@
 window.onload = function() {
-
+    var job;
+    var name;
     var KRGame = {};
 
     KRGame.StateTitle = function (game) {
@@ -102,12 +103,12 @@ window.onload = function() {
 
         submitChoice: function() {
             if (this.choice != -1) {
-                this.state.start('StateAsteroids');
+                job = this.choice;
+                this.state.start('StateCaptain');
             }
         },
 
         keyPress: function(char) {
-            console.log(char);
             if (char === '1') {
                 this.choiceText.setText("1");
                 if (this.choice == -1 ) { this.cursor.x += 26; }
@@ -122,6 +123,73 @@ window.onload = function() {
                 this.choice = 3;
             }
         }
+    };
+
+    KRGame.StateCaptain = {};
+
+    KRGame.StateCaptain = function (game) {
+        this.bg;
+        this.stars;
+        this.text;
+        this.cursor;
+        this.choiceText;
+        this.timer = 0;
+        this.name = '';
+    };
+
+    KRGame.StateCaptain.prototype = {
+        preload: function() {
+            this.game.load.bitmapFont('dosfont', 'assets/font/dos.png', 'assets/font/dos.fnt');
+            this.game.load.image('background', 'assets/background.png');
+            this.game.load.image('stars', 'assets/stars.png');
+        },
+
+        create: function() {
+            this.bg = this.game.add.tileSprite(0, 0, 800, 600, 'background');
+            this.stars = this.game.add.tileSprite(0, 0, 800, 600, 'stars');
+
+            this.text = this.game.add.bitmapText(100, 100, 'dosfont','What is the name of you captain?', 32);
+            this.cursor = this.game.add.bitmapText(100, 132, 'dosfont', '_', 32);
+            this.choiceText = this.game.add.bitmapText(100, 132, 'dosfont', '', 32);
+
+            game.input.keyboard.addKeyCapture([ Phaser.Keyboard.BACKSPACE, Phaser.Keyboard.ENTER ]);
+            this.enter = game.input.keyboard.addKey(Phaser.Keyboard.ENTER);
+            this.enter.onDown.add(this.submitChoice, this);
+            this.backspace = game.input.keyboard.addKey(Phaser.Keyboard.BACKSPACE);
+            this.backspace.onDown.add(this.deleteChoice, this);
+
+            game.input.keyboard.addCallbacks(this, null, null, this.keyPress);
+        },
+
+        update: function() {
+            this.stars.tilePosition.x += 0.5;
+            this.bg.tilePosition.x -= 0.5;
+
+            this.timer += this.game.time.elapsed;
+            if (this.timer >= 500) {
+                this.timer = 0;
+                this.cursor.visible = !this.cursor.visible;
+            }
+        },
+
+        keyPress: function(char) {
+            this.name += char;
+            this.choiceText.setText(this.name);
+            this.cursor.x += 20;
+        },
+
+        deleteChoice: function() {
+            this.name = this.name.substring(0, this.name.length - 1);
+            this.choiceText.setText(this.name);
+            this.cursor.x -= 20;
+
+            if(this.name == "") { this.cursor.x = 100; }
+        },
+
+        submitChoice: function() {
+            name = this.name;
+            this.state.start('StateAsteroids');
+        }  
     };
 
     KRGame.StateAsteroids = {};
@@ -320,6 +388,7 @@ window.onload = function() {
 
     game.state.add('StateTitle', KRGame.StateTitle);
     game.state.add('StateJob', KRGame.StateJob);
+    game.state.add('StateCaptain', KRGame.StateCaptain);
     game.state.add('StateAsteroids', KRGame.StateAsteroids);
 
     game.state.start('StateTitle');
