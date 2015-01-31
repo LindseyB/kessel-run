@@ -20,7 +20,7 @@ window.onload = function() {
             this.title.anchor.setTo(0.5, 0.5);
 
             this.game.input.keyboard.addKeyCapture([Phaser.Keyboard.SPACEBAR]);
-            
+
             this.text = this.game.add.bitmapText(game.world.centerX, 500, 'dosfont','Press Spacebar', 32);
             this.text.x = this.game.width / 2 - this.text.textWidth / 2;
         },
@@ -98,7 +98,7 @@ window.onload = function() {
                 this.choice = -1;
                 this.cursor.x -= 26;
                 this.choiceText.setText("");
-            }            
+            }
         },
 
         submitChoice: function() {
@@ -180,9 +180,8 @@ window.onload = function() {
         keyPress: function(char) {
             this.name += char;
             this.choiceText.setText(this.name);
-            
-            this.cursor.x = 100 + this.choiceText.width;
-            if (this.name.length > 0) { this.cursor.x += 26; }
+
+            this.cursor.x = 126 + this.choiceText.width;
         },
 
         deleteChoice: function() {
@@ -194,14 +193,101 @@ window.onload = function() {
 
         submitChoice: function() {
             name = this.name;
-            this.state.start('StateAsteroids');
+            this.state.start('StateParty');
         },
 
         addSpace: function() {
             this.name += ' ';
             this.choiceText.setText(this.name);
-            //this.cursor.x += 20;            
-        }  
+            this.cursor.x = 126 + this.choiceText.width;
+        }
+    };
+
+    KRGame.StateParty = {};
+
+    KRGame.StateParty = function (game) {
+        this.bg;
+        this.stars;
+        this.party;
+        this.text;
+        this.cursor;
+        this.choiceText = [];
+        this.timer = 0;
+        this.members = ["","","","",""];
+        this.current_member = 1;
+    };
+
+    KRGame.StateParty.prototype = {
+        preload: function() {
+            this.game.load.bitmapFont('dosfont', 'assets/font/dos.png', 'assets/font/dos.fnt');
+            this.game.load.image('background', 'assets/background.png');
+            this.game.load.image('stars', 'assets/stars.png');
+            this.game.load.image('party', 'assets/party.png');
+        },
+
+        create: function() {
+            this.bg = this.game.add.tileSprite(0, 0, 800, 600, 'background');
+            this.stars = this.game.add.tileSprite(0, 0, 800, 600, 'stars');
+            this.party = this.game.add.sprite(0,0, 'party');
+
+            this.text = this.game.add.bitmapText(100, 305, 'dosfont','What are the names of the rest of your\ncrew?', 32);
+            this.cursor = this.game.add.bitmapText(132, 401, 'dosfont', '_', 32);
+            this.members[0] = name;
+            for (var i = 0; i < 5; i++) {
+                this.choiceText.push(this.game.add.bitmapText(100, 369+(i*32), 'dosfont', (i+1)+'. '+this.members[i]));
+            }
+
+            game.input.keyboard.addKeyCapture([ Phaser.Keyboard.BACKSPACE, Phaser.Keyboard.ENTER, Phaser.Keyboard.SPACEBAR ]);
+            this.enter = game.input.keyboard.addKey(Phaser.Keyboard.ENTER);
+            this.enter.onDown.add(this.submitChoice, this);
+            this.backspace = game.input.keyboard.addKey(Phaser.Keyboard.BACKSPACE);
+            this.backspace.onDown.add(this.deleteChoice, this);
+            this.spacebar = game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
+            this.spacebar.onDown.add(this.addSpace, this);
+
+            game.input.keyboard.addCallbacks(this, null, null, this.keyPress);
+        },
+
+        update: function() {
+            this.stars.tilePosition.x += 0.5;
+            this.bg.tilePosition.x -= 0.5;
+
+            this.timer += this.game.time.elapsed;
+            if (this.timer >= 500) {
+                this.timer = 0;
+                this.cursor.visible = !this.cursor.visible;
+            }
+        },
+
+        keyPress: function(char) {
+            this.members[this.current_member] += char;
+            this.choiceText[this.current_member].setText((this.current_member+1)+". " + this.members[this.current_member]);
+
+            this.cursor.x = 126 + this.choiceText[this.current_member].width;
+        },
+
+        deleteChoice: function() {
+            this.members[this.current_member] = this.members[this.current_member].substring(0, this.members[this.current_member].length - 1);
+            this.choiceText[this.current_member].setText((this.current_member+1)+". " + this.members[this.current_member]);
+            this.cursor.x = 126 + this.choiceText[this.current_member].width;
+            if (this.members[this.current_member].length > 0) { this.cursor.x += 26; }
+        },
+
+        submitChoice: function() {
+            if (this.current_member < 4) {
+                this.current_member++;
+                this.cursor.y += 32;
+                this.cursor.x = 132;
+            } else {
+                this.state.start('StateAsteroids');
+            }
+        },
+
+        addSpace: function() {
+            this.members[this.current_member] += ' ';
+            this.choiceText[this.current_member].setText((this.current_member+1)+". " + this.members[this.current_member]);
+            this.cursor.x = 126 + this.choiceText[this.current_member].width;
+        }
     };
 
     KRGame.StateAsteroids = {};
@@ -281,7 +367,7 @@ window.onload = function() {
             }
 
             this.cursors = this.game.input.keyboard.createCursorKeys();
-            this.game.input.keyboard.addKeyCapture([ 
+            this.game.input.keyboard.addKeyCapture([
                 Phaser.Keyboard.SPACEBAR,
                 Phaser.Keyboard.W,
                 Phaser.Keyboard.A,
@@ -317,7 +403,7 @@ window.onload = function() {
             this.asteroids.forEachExists(this.screenWrap, this);
 
             this.game.physics.arcade.overlap(this.bullets, this.asteroids, this.collisionHandler, null, this);
-            this.game.physics.arcade.overlap(this.asteroids, this.ship, this.playerHitHander, null, this);            
+            this.game.physics.arcade.overlap(this.asteroids, this.ship, this.playerHitHander, null, this);
         },
 
         fireBullet: function() {
@@ -332,7 +418,7 @@ window.onload = function() {
                     this.game.physics.arcade.velocityFromRotation(this.ship.rotation, 400, this.bullet.body.velocity);
                     this.bulletTime = this.game.time.now + 200;
                 }
-            }            
+            }
         },
 
         createAsteroid: function() {
@@ -348,7 +434,7 @@ window.onload = function() {
                     this.game.physics.arcade.velocityFromRotation(this.asteroid.rotation, 10, this.asteroid.body.velocity);
                     this.asteroidTime = this.game.time.now + 1000;
                 }
-            }            
+            }
         },
 
         screenWrap: function(sprite) {
@@ -362,13 +448,13 @@ window.onload = function() {
                 sprite.y = this.game.height;
             } else if (sprite.y > this.game.height) {
                 sprite.y = 0;
-            }            
+            }
         },
 
         collisionHandler: function(bullet, asteroid) {
             this.explosionSound.play();
             bullet.kill();
-            asteroid.kill();            
+            asteroid.kill();
         },
 
         playerHitHander: function(ship, asteroid) {
@@ -376,7 +462,7 @@ window.onload = function() {
             live = this.lives.getFirstAlive();
             if (live) { live.kill(); }
             this.hurt = true;
-            this.hurtDuration = this.game.time.now + 800;            
+            this.hurtDuration = this.game.time.now + 800;
         },
 
         animateHurt: function() {
@@ -392,7 +478,7 @@ window.onload = function() {
             if (this.hurt && this.game.time.now > this.hurtDuration) {
                 this.hurt = false;
                 this.ship.alpha = 1;
-            }            
+            }
         }
     };
 
@@ -401,6 +487,7 @@ window.onload = function() {
     game.state.add('StateTitle', KRGame.StateTitle);
     game.state.add('StateJob', KRGame.StateJob);
     game.state.add('StateCaptain', KRGame.StateCaptain);
+    game.state.add('StateParty', KRGame.StateParty);
     game.state.add('StateAsteroids', KRGame.StateAsteroids);
 
     game.state.start('StateTitle');
