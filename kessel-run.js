@@ -22,7 +22,6 @@ window.onload = function() {
             
             this.text = this.game.add.bitmapText(game.world.centerX, 500, 'dosfont','Press Spacebar', 32);
             this.text.x = this.game.width / 2 - this.text.textWidth / 2;
-            this.text.anchor.set(0.5);
         },
 
         update: function() {
@@ -69,7 +68,7 @@ window.onload = function() {
             this.game.load.image('background', 'assets/background.png');
             this.game.load.image('stars', 'assets/stars.png');
             this.game.load.image('bullet', 'assets/bullet.png');
-            this.game.load.audio('bulletSound', 'assets/audio/Pew_Pew-DKnight556.mp3');
+            this.game.load.audio('bulletSound', 'assets/audio/170161__timgormly__8-bit-laser.mp3');
             this.game.load.image('asteroid', 'assets/asteroid.png');
         },
 
