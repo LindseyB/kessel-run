@@ -5,13 +5,13 @@ window.onload = function() {
     KRGame.StateTitle = function (game) {
         this.title;
         this.text;
-        this.style;
         this.timer = 0;
     };
 
     KRGame.StateTitle.prototype = {
         preload: function () {
             this.game.load.image('title', 'assets/title.png');
+            this.game.load.bitmapFont('dosfont', 'assets/font/font.png', 'assets/font/font.fnt');
         },
 
         create: function () {
@@ -20,14 +20,13 @@ window.onload = function() {
 
             this.game.input.keyboard.addKeyCapture([Phaser.Keyboard.SPACEBAR]);
             
-            this.style = { font: "40px Monospace", fill: "#66ff66", align: "center" };
-            this.text = game.add.text(game.world.centerX, 500, "Press Spacebar", this.style);
-            this.text.anchor.set(0.5);
+            this.text = this.game.add.bitmapText(game.world.centerX, 500, 'dosfont','Press Spacebar', 32);
+            this.text.x = this.game.width / 2 - this.text.textWidth / 2;
         },
 
         update: function() {
             if (game.input.keyboard.isDown(Phaser.Keyboard.SPACEBAR)) {
-                this.gotoStateAsteroids();
+                this.gotoStateJob();
             }
 
             this.timer += this.game.time.elapsed;
@@ -37,20 +36,88 @@ window.onload = function() {
             }
         },
 
-        gotoStateAsteroids: function() {
-            this.state.start('StateAsteroids');
+        gotoStateJob: function() {
+            this.state.start('StateJob');
         }
     };
-
 
     KRGame.StateJob = {};
 
     KRGame.StateJob = function (game) {
-
+        this.bg;
+        this.stars;
+        this.timer = 0;
+        this.choiceText = ""
+        this.choice = -1;
+        this.backspace;
+        this.enter;
     };
 
     KRGame.StateJob.prototype = {
+        preload: function() {
+            this.game.load.bitmapFont('dosfont', 'assets/font/dos.png', 'assets/font/dos.fnt');
+            this.game.load.image('background', 'assets/background.png');
+            this.game.load.image('stars', 'assets/stars.png');
+        },
 
+        create: function() {
+            this.bg = this.game.add.tileSprite(0, 0, 800, 600, 'background');
+            this.stars = this.game.add.tileSprite(0, 0, 800, 600, 'stars');
+
+            this.text = this.game.add.bitmapText(100, 100, 'dosfont','You May: \n\n1. Be an investment banker from\n   New Boston\n2. Be a doctor from Osiris\n3. Be a space cowboy from Mos Eisley\n\nWhat is your choice?', 32);
+            this.cursor = this.game.add.bitmapText(450, 320, 'dosfont', '_', 32);
+            this.choiceText = this.game.add.bitmapText(450, 325, 'dosfont', '', 32);
+
+            game.input.keyboard.addKeyCapture([ Phaser.Keyboard.BACKSPACE, Phaser.Keyboard.ENTER ]);
+            this.enter = game.input.keyboard.addKey(Phaser.Keyboard.ENTER);
+            this.enter.onDown.add(this.submitChoice, this);
+            this.backspace = game.input.keyboard.addKey(Phaser.Keyboard.BACKSPACE);
+            this.backspace.onDown.add(this.deleteChoice, this);
+
+            game.input.keyboard.addCallbacks(this, null, null, this.keyPress);
+        },
+
+        update: function() {
+            this.stars.tilePosition.x += 0.5;
+            this.bg.tilePosition.x -= 0.5;
+
+            this.timer += this.game.time.elapsed;
+            if (this.timer >= 500) {
+                this.timer = 0;
+                this.cursor.visible = !this.cursor.visible;
+            }
+        },
+
+        deleteChoice: function() {
+            if (this.choice != -1) {
+                this.choice = -1;
+                this.cursor.x -= 26;
+                this.choiceText.setText("");
+            }            
+        },
+
+        submitChoice: function() {
+            if (this.choice != -1) {
+                this.state.start('StateAsteroids');
+            }
+        },
+
+        keyPress: function(char) {
+            console.log(char);
+            if (char === '1') {
+                this.choiceText.setText("1");
+                if (this.choice == -1 ) { this.cursor.x += 26; }
+                this.choice = 1;
+            } else if (char === '2') {
+                this.choiceText.setText("2");
+                if (this.choice == -1 ) { this.cursor.x += 26; }
+                this.choice = 2;
+            } else if (char === '3') {
+                this.choiceText.setText("3");
+                if (this.choice == -1 ) { this.cursor.x += 26; }
+                this.choice = 3;
+            }
+        }
     };
 
     KRGame.StateAsteroids = {};
@@ -80,8 +147,10 @@ window.onload = function() {
             this.game.load.image('background', 'assets/background.png');
             this.game.load.image('stars', 'assets/stars.png');
             this.game.load.image('bullet', 'assets/bullet.png');
-            this.game.load.audio('bulletSound', 'assets/audio/Pew_Pew-DKnight556.mp3');
             this.game.load.image('asteroid', 'assets/asteroid.png');
+
+            this.game.load.audio('bulletSound', 'assets/audio/170161__timgormly__8-bit-laser.mp3');
+            this.game.load.audio('explosionSound', 'assets/audio/170144__timgormly__8-bit-explosion2.mp3');
         },
 
         create: function() {
@@ -115,6 +184,7 @@ window.onload = function() {
             this.asteroids.setAll('anchor.y', 0.5);
 
             this.bulletSound = game.add.audio('bulletSound');
+            this.explosionSound = game.add.audio('explosionSound');
 
             this.lives = this.game.add.group();
             for (var i = 0; i < 3; i++) {
@@ -212,6 +282,7 @@ window.onload = function() {
         },
 
         collisionHandler: function(bullet, asteroid) {
+            this.explosionSound.play();
             bullet.kill();
             asteroid.kill();            
         },
@@ -244,6 +315,7 @@ window.onload = function() {
     var game = new Phaser.Game(800, 600, Phaser.AUTO, 'kessel-run-container');
 
     game.state.add('StateTitle', KRGame.StateTitle);
+    game.state.add('StateJob', KRGame.StateJob);
     game.state.add('StateAsteroids', KRGame.StateAsteroids);
 
     game.state.start('StateTitle');
