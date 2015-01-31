@@ -5,13 +5,13 @@ window.onload = function() {
     KRGame.StateTitle = function (game) {
         this.title;
         this.text;
-        this.style;
         this.timer = 0;
     };
 
     KRGame.StateTitle.prototype = {
         preload: function () {
             this.game.load.image('title', 'assets/title.png');
+            this.game.load.bitmapFont('dosfont', 'assets/font/font.png', 'assets/font/font.fnt');
         },
 
         create: function () {
@@ -20,8 +20,8 @@ window.onload = function() {
 
             this.game.input.keyboard.addKeyCapture([Phaser.Keyboard.SPACEBAR]);
             
-            this.style = { font: "40px Monospace", fill: "#66ff66", align: "center" };
-            this.text = game.add.text(game.world.centerX, 500, "Press Spacebar", this.style);
+            this.text = this.game.add.bitmapText(game.world.centerX, 500, 'dosfont','Press Spacebar', 32);
+            this.text.x = this.game.width / 2 - this.text.textWidth / 2;
             this.text.anchor.set(0.5);
         },
 
