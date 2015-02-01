@@ -280,6 +280,7 @@ window.onload = function() {
                 this.cursor.y += 32;
                 this.cursor.x = 132;
             } else {
+                // TODO: store all the members names and setup initial stats
                 this.state.start('StateShop');
             }
         },
@@ -308,6 +309,9 @@ window.onload = function() {
 
         this.total = 0;
         this.total_text;
+
+        this.enter_text;
+        this.timer = 0;
     };
 
     KRGame.StateShop.prototype = {
@@ -326,9 +330,9 @@ window.onload = function() {
             this.game.add.bitmapText(200, 20, 'dosfont','Wimateeka\'s Shoppe', 40);
             this.game.add.bitmapText(200, 70, 'dosfont', '1. Solar Panels @ $500', 32);
             this.game.add.bitmapText(200, 132, 'dosfont','2. Food         @ $10', 32);
-            this.game.add.bitmapText(200, 134+60, 'dosfont','3. Clothing     @ $40', 32);
-            this.game.add.bitmapText(200, 166+90, 'dosfont','4. Spare Parts  @ $100', 32);
-            this.game.add.bitmapText(200, 198+120, 'dosfont','5. Spice        @ $100', 32);
+            this.game.add.bitmapText(200, 194, 'dosfont','3. Clothing     @ $40', 32);
+            this.game.add.bitmapText(200, 256, 'dosfont','4. Spare Parts  @ $100', 32);
+            this.game.add.bitmapText(200, 318, 'dosfont','5. Spice        @ $100', 32);
 
             this.solar_text = this.game.add.bitmapText(600, 70, 'dosfont', '0', 32);
             this.solar_up = this.game.add.sprite(590, 55, 'arrow');
@@ -344,12 +348,78 @@ window.onload = function() {
             this.solar_down.events.onInputDown.add(this.solarDown, this);
             this.solar_down.events.onInputOut.add(this.fade, this);
 
+            this.food_text = this.game.add.bitmapText(600, 132, 'dosfont', '0', 32);
+            this.food_up = this.game.add.sprite(590, 117, 'arrow');
+            this.food_up.inputEnabled = true;
+            this.food_up.events.onInputOver.add(this.fade, this);
+            this.food_up.events.onInputDown.add(this.foodUp, this);
+            this.food_up.events.onInputOut.add(this.fade, this);
+            this.food_down = this.game.add.sprite(608, 162, 'arrow');
+            this.food_down.anchor.setTo(0.5, 0.5);
+            this.food_down.angle = 180;
+            this.food_down.inputEnabled = true;
+            this.food_down.events.onInputOver.add(this.fade, this);
+            this.food_down.events.onInputDown.add(this.foodDown, this);
+            this.food_down.events.onInputOut.add(this.fade, this);
+
+            this.clothing_text = this.game.add.bitmapText(600, 194, 'dosfont', '0', 32);
+            this.clothing_up = this.game.add.sprite(590, 179, 'arrow');
+            this.clothing_up.inputEnabled = true;
+            this.clothing_up.events.onInputOver.add(this.fade, this);
+            this.clothing_up.events.onInputDown.add(this.clothingUp, this);
+            this.clothing_up.events.onInputOut.add(this.fade, this);
+            this.clothing_down = this.game.add.sprite(608, 225, 'arrow');
+            this.clothing_down.anchor.setTo(0.5, 0.5);
+            this.clothing_down.angle = 180;
+            this.clothing_down.inputEnabled = true;
+            this.clothing_down.events.onInputOver.add(this.fade, this);
+            this.clothing_down.events.onInputDown.add(this.clothingDown, this);
+            this.clothing_down.events.onInputOut.add(this.fade, this);
+
+            this.parts_text = this.game.add.bitmapText(600, 256, 'dosfont', '0', 32);
+            this.parts_up = this.game.add.sprite(590, 241, 'arrow');
+            this.parts_up.inputEnabled = true;
+            this.parts_up.events.onInputOver.add(this.fade, this);
+            this.parts_up.events.onInputDown.add(this.partsUp, this);
+            this.parts_up.events.onInputOut.add(this.fade, this);
+            this.parts_down = this.game.add.sprite(608, 288, 'arrow');
+            this.parts_down.anchor.setTo(0.5, 0.5);
+            this.parts_down.angle = 180;
+            this.parts_down.inputEnabled = true;
+            this.parts_down.events.onInputOver.add(this.fade, this);
+            this.parts_down.events.onInputDown.add(this.partsDown, this);
+            this.parts_down.events.onInputOut.add(this.fade, this);
+
+            this.spice_text = this.game.add.bitmapText(600, 318, 'dosfont', '0', 32);
+            this.spice_up = this.game.add.sprite(590, 303, 'arrow');
+            this.spice_up.inputEnabled = true;
+            this.spice_up.events.onInputOver.add(this.fade, this);
+            this.spice_up.events.onInputDown.add(this.spiceUp, this);
+            this.spice_up.events.onInputOut.add(this.fade, this);
+            this.spice_down = this.game.add.sprite(608, 349, 'arrow');
+            this.spice_down.anchor.setTo(0.5, 0.5);
+            this.spice_down.angle = 180;
+            this.spice_down.inputEnabled = true;
+            this.spice_down.events.onInputOver.add(this.fade, this);
+            this.spice_down.events.onInputDown.add(this.spiceDown, this);
+            this.spice_down.events.onInputOut.add(this.fade, this);
+
             this.money = this.game.add.bitmapText(200, 450, 'dosfont','Your Funds: $'+money.toFixed(2), 32);
             this.total_text = this.game.add.bitmapText(200, 500, 'dosfont','     Total: $0.00', 32);
+
+            this.enter_text = this.game.add.bitmapText(game.world.centerX, 550, 'dosfont','Press Enter to Continue', 32);
+            this.enter_text.x = this.game.width / 2 - this.enter_text.textWidth / 2;
+
+            this.enter = game.input.keyboard.addKey(Phaser.Keyboard.ENTER);
+            this.enter.onDown.add(this.submitPurchase, this);
         },
 
         update: function() {
-
+            this.timer += this.game.time.elapsed;
+            if (this.timer >= 500) {
+                this.timer = 0;
+                this.enter_text.visible = !this.enter_text.visible;
+            }
         },
 
         solarUp: function(sprite, pointer) {
@@ -368,12 +438,82 @@ window.onload = function() {
             }
         },
 
+        foodUp: function(sprite, pointer) {
+            this.food_amount++;
+            this.food_text.setText(this.food_amount);
+            this.total += 10;
+            this.total_text.setText("     Total: $" + this.total.toFixed(2));
+        },
+
+        foodDown: function(sprite, pointer) {
+            if(this.food_amount > 0 ) {
+                this.food_amount--;
+                this.food_text.setText(this.food_amount)
+                this.total -= 10;
+                this.total_text.setText("     Total: $" + this.total.toFixed(2));
+            }
+        },
+
+        clothingUp: function(sprite, pointer) {
+            this.clothing_amount++;
+            this.clothing_text.setText(this.clothing_amount);
+            this.total += 40;
+            this.total_text.setText("     Total: $" + this.total.toFixed(2));
+        },
+
+        clothingDown: function(sprite, pointer) {
+            if(this.clothing_amount > 0 ) {
+                this.clothing_amount--;
+                this.clothing_text.setText(this.clothing_amount)
+                this.total -= 40;
+                this.total_text.setText("     Total: $" + this.total.toFixed(2));
+            }
+        },
+
+        partsUp: function(sprite, pointer) {
+            this.parts_amount++;
+            this.parts_text.setText(this.parts_amount);
+            this.total += 100;
+            this.total_text.setText("     Total: $" + this.total.toFixed(2));
+        },
+
+        partsDown: function(sprite, pointer) {
+            if(this.parts_amount > 0 ) {
+                this.parts_amount--;
+                this.parts_text.setText(this.parts_amount)
+                this.total -= 100;
+                this.total_text.setText("     Total: $" + this.total.toFixed(2));
+            }
+        },
+
+
+        spiceUp: function(sprite, pointer) {
+            this.spice_amount++;
+            this.spice_text.setText(this.spice_amount);
+            this.total += 100;
+            this.total_text.setText("     Total: $" + this.total.toFixed(2));
+        },
+
+        spiceDown: function(sprite, pointer) {
+            if(this.spice_amount > 0 ) {
+                this.spice_amount--;
+                this.spice_text.setText(this.spice_amount)
+                this.total -= 100;
+                this.total_text.setText("     Total: $" + this.total.toFixed(2));
+            }
+        },
+
         fade: function(sprite, pointer) {
             if(sprite.alpha != 0.8) {
                 sprite.alpha = 0.8;
             } else {
                 sprite.alpha = 1;
             }
+        },
+
+        submitPurchase: function() {
+            // TODO: log the supplies and money updates
+            this.state.start('StateAsteroids');
         }
     };
 
