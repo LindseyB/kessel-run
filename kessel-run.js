@@ -513,6 +513,48 @@ window.onload = function() {
 
         submitPurchase: function() {
             // TODO: log the supplies and money updates
+            this.state.start('StateStartStation');
+        }
+    };
+
+    KRGame.StateStartStation = {};
+
+    KRGame.StateStartStation = function (game) {
+        this.station;
+        this.music;
+        this.enter_text;
+        this.timer = 0;
+    };
+
+    KRGame.StateStartStation.prototype = {
+        preload: function() {
+            this.game.load.image('station', 'assets/station.png');
+            this.game.load.audio('music', 'assets/audio/SpaceGone-8bit-Chiptune-Song-36.mp3');
+            this.game.load.bitmapFont('dosfont', 'assets/font/dos.png', 'assets/font/dos.fnt');
+
+        },
+
+        create: function() {
+            this.station = this.game.add.sprite(0,0, 'station');
+            this.music = this.game.add.audio('music');
+            this.music.loop = true;
+            this.music.play();
+            this.enter_text = this.game.add.bitmapText(game.world.centerX, game.world.centerY, 'dosfont','Press Enter to Take Off', 64);
+            this.enter_text.x = this.game.width / 2 - this.enter_text.textWidth / 2;
+
+            this.enter = game.input.keyboard.addKey(Phaser.Keyboard.ENTER);
+            this.enter.onDown.add(this.takeOff, this);
+        },
+
+        update: function() {
+            this.timer += this.game.time.elapsed;
+            if (this.timer >= 500) {
+                this.timer = 0;
+                this.enter_text.visible = !this.enter_text.visible;
+            }
+        },
+
+        takeOff: function() {
             this.state.start('StateAsteroids');
         }
     };
@@ -716,6 +758,7 @@ window.onload = function() {
     game.state.add('StateCaptain', KRGame.StateCaptain);
     game.state.add('StateParty', KRGame.StateParty);
     game.state.add('StateShop', KRGame.StateShop);
+    game.state.add('StateStartStation', KRGame.StateStartStation);
     game.state.add('StateAsteroids', KRGame.StateAsteroids);
 
     game.state.start('StateTitle');
