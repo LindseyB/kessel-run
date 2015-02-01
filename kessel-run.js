@@ -9,6 +9,7 @@ window.onload = function() {
     var parts = 0;
     var spice = 0;
     var crew = [];
+    var day = 0;
 
     KRGame.StateTitle = function (game) {
         this.title;
@@ -597,6 +598,8 @@ window.onload = function() {
         this.rest;
         this.distanceTraveled = 0;
         this.timer = 0;
+        this.dayTimer = 0;
+        this.day_status;
     };
 
     KRGame.StateTravel.prototype = {
@@ -636,6 +639,8 @@ window.onload = function() {
             this.spice_status = this.game.add.bitmapText(50, 60+(26*4), 'dosfont', 'Spice: ' + spice, 26);
             this.money_status = this.game.add.bitmapText(50, 60+(26*5), 'dosfont', 'Money: $' + money.toFixed(2), 26);
 
+            this.day_status = this.game.add.bitmapText(700, 60, 'dosfont', 'Day: ' + day, 26);
+
             this.line1 = this.game.add.sprite(50, 60+(26*6), 'divider');
             this.line1.scale.x = 0.3;
             this.line1.scale.y = 0.3;
@@ -658,12 +663,36 @@ window.onload = function() {
             this.bg.tilePosition.x -= 0.5;
 
             this.timer += this.game.time.elapsed;
-            if (this.timer >= 500) {
+            if (this.timer >= 500) { //TODO: only move if not resting
                 this.timer = 0;
-                this.distanceTraveled += 1; //TODO: change this
+                this.distanceTraveled += .01; //TODO: update for speed
                 if(this.distanceTraveled > 58) { this.distanceTraveled = 58; }
                 this.shipProgress.x = 750 - (this.distanceTraveled/58 * 700);
-                console.log(this.shipProgress.x);
+            }
+
+            this.dayTimer += this.game.time.elapsed;
+            if (this.dayTimer >= 1000) {
+                this.dayTimer = 0;
+                day++;
+
+                for (var i=0; i < crew.length; i++){
+                    if ( food > 0 && crew[i].hp > 0) {
+                        // TODO: update for rations
+                        food -= 3;
+                        if (food < 0) { food = 0; }
+                        if (crew[i].status == "starving") { crew[i].status = "healthy";}
+                    } else if (food == 0) {
+                        crew[i].hp--;
+                        crew[i].status = "starving";
+                    } else {
+                        crew[i].status = "dead";
+                    }
+
+                    this.crew_statuses[i].setText(crew[i].name + ": " + crew[i].status);
+                }
+
+                this.day_status.setText('Day:' + day);
+                this.food_status.setText('Food: ' + food);
             }
         },
 
