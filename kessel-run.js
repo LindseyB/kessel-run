@@ -199,8 +199,8 @@ window.onload = function() {
         },
 
         submitChoice: function() {
-            name = this.name;
-            crew.push({name: this.name, status: "healthy", hp: 20});
+            name = "Cpt. " + this.name;
+            crew.push({name: name, status: "healthy", hp: 20});
             this.state.start('StateParty');
         },
 
