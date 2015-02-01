@@ -11,6 +11,7 @@ window.onload = function() {
     var crew = [];
     var day = 0;
     var meals = 3;
+    var speed = 0.05;
 
     KRGame.StateTitle = function (game) {
         this.title;
@@ -604,6 +605,7 @@ window.onload = function() {
         this.day_status;
         this.resting = false;
         this.meal_buttons;
+        this.speed_buttons;
     };
 
     KRGame.StateTravel.prototype = {
@@ -618,6 +620,9 @@ window.onload = function() {
             this.game.load.image('1meals', 'assets/1meal.png');
             this.game.load.image('2meals', 'assets/2meals.png');
             this.game.load.image('3meals', 'assets/3meals.png');
+            this.game.load.image('speed1', 'assets/slow.png');
+            this.game.load.image('speed2', 'assets/moderate.png');
+            this.game.load.image('speed3', 'assets/fast.png');
         },
 
         create: function() {
@@ -673,8 +678,8 @@ window.onload = function() {
             this.game.add.bitmapText(700, 98, 'dosfont', 'Rations', 26);
 
             this.meal_buttons = game.add.group();
-            for(var i=0; i<3;  i++) {
-                this.meal_button = this.game.add.sprite(700, 126+(i*34), (i+1)+'meals')
+            for(var i=0; i<3; i++) {
+                this.meal_button = this.game.add.sprite(700, 126+(i*34), (i+1)+'meals');
                 this.meal_buttons.add(this.meal_button);
                 this.meal_button.inputEnabled = true;
                 this.meal_button.events.onInputOver.add(this.fade, this);
@@ -682,6 +687,20 @@ window.onload = function() {
                 this.meal_button.events.onInputOut.add(this.fade, this);
 
                 if(i==2) { this.meal_button.tint = 0x555555; }
+            }
+
+            this.game.add.bitmapText(700, 230, 'dosfont', 'Speed', 26);
+
+            this.speed_buttons = game.add.group();
+            for(var i=0; i<3; i++) {
+                this.speed_button = this.game.add.sprite(700, 256+(i*34), 'speed'+(i+1));
+                this.speed_buttons.add(this.speed_button);
+                this.speed_button.inputEnabled = true;
+                this.speed_button.events.onInputOver.add(this.fade, this);
+                this.speed_button.events.onInputDown.add(this.speedChanged, {index: i});
+                this.speed_button.events.onInputOut.add(this.fade, this);
+
+                if(i==2) { this.speed_button.tint = 0x555555; }
             }
         },
 
@@ -696,13 +715,21 @@ window.onload = function() {
                     this.meal_buttons.getAt(i).tint = 0xffffff;
                 }
             }
+            this.speed_buttons.setAll('tint', 0xffffff);
+            if(speed == 0.03){
+                this.speed_buttons.getAt(0).tint = 0x555555;
+            } else if (speed == 0.04) {
+                this.speed_buttons.getAt(1).tint = 0x555555;
+            } else {
+                this.speed_buttons.getAt(2).tint = 0x555555;
+            }
 
 
             if(!this.resting){
                 this.timer += this.game.time.elapsed;
                 if (this.timer >= 500) {
                     this.timer = 0;
-                    this.distanceTraveled += .05; //TODO: update for speed
+                    this.distanceTraveled += speed;
                     if(this.distanceTraveled > 58) { this.distanceTraveled = 58; }
                     this.shipProgress.x = 750 - (this.distanceTraveled/58 * 700);
                 }
@@ -725,7 +752,6 @@ window.onload = function() {
 
                 for (var i=0; i < crew.length; i++){
                     if ( food > 0 && crew[i].hp > 0) {
-                        // TODO: update for rations
                         food -= meals;
                         if (food < 0) { food = 0; }
                         if (crew[i].status == "starving") { crew[i].status = "healthy";}
@@ -765,6 +791,16 @@ window.onload = function() {
 
         mealChanged: function() {
             meals = this.amount;
+        },
+
+        speedChanged: function() {
+            if(this.index==0){
+                speed = 0.03;
+            } else if (this.index==1) {
+                speed = 0.04;
+            } else {
+                speed = 0.05;
+            }
         }
     };
 
