@@ -708,6 +708,10 @@ window.onload = function() {
         },
 
         update: function() {
+            if(solar == 0 && !this.resting) {
+                speed = 0.03;
+            }
+
             if(!this.resting) {
                 this.stars.tilePosition.x += speed*100;
                 this.bg.tilePosition.x -= speed*100;
@@ -866,11 +870,11 @@ window.onload = function() {
             if (job == 3) { this.brokenPartProb -= 5; }
 
             if ((Math.floor(Math.random() * 100) + 1) <= this.brokenPartProb) {
-                if(parts > 0) {
+                if (parts > 0) {
                     parts--;
                     this.parts_status.setText("Spare Parts: " + parts);
                     this.message.setText("One of your solar panels broke, \nbut you were able to replace it with a spare.")
-                } else {
+                } else if (solar > 0) {
                     solar--;
                     this.solar_status.setText("Solar Panels: " + solar);
                     this.message.setText("One of your solar panels broke, \nbut you were unable to replace it.")
