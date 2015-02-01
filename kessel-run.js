@@ -9,6 +9,8 @@ window.onload = function() {
     var parts = 0;
     var spice = 0;
     var crew = [];
+    var day = 0;
+    var meals = 3;
 
     KRGame.StateTitle = function (game) {
         this.title;
@@ -111,6 +113,7 @@ window.onload = function() {
         submitChoice: function() {
             if (this.choice != -1) {
                 job = this.choice;
+                if (job == 1) { money += 5000; }
                 this.state.start('StateCaptain');
             }
         },
@@ -592,8 +595,15 @@ window.onload = function() {
         this.clothing_status;
         this.parts_status;
         this.spice_status;
-        this.crew_statuses = [];
+        this.crew_statuses;
         this.rest;
+        this.distanceTraveled = 0;
+        this.timer = 0;
+        this.dayTimer = 0;
+        this.restTimer = 0;
+        this.day_status;
+        this.resting = false;
+        this.meal_buttons;
     };
 
     KRGame.StateTravel.prototype = {
@@ -605,6 +615,9 @@ window.onload = function() {
             this.game.load.image('divider', 'assets/divider.png');
             this.game.load.image('rest', 'assets/rest.png');
             this.game.load.image('food', 'assets/food.png');
+            this.game.load.image('1meals', 'assets/1meal.png');
+            this.game.load.image('2meals', 'assets/2meals.png');
+            this.game.load.image('3meals', 'assets/3meals.png');
         },
 
         create: function() {
@@ -633,26 +646,102 @@ window.onload = function() {
             this.spice_status = this.game.add.bitmapText(50, 60+(26*4), 'dosfont', 'Spice: ' + spice, 26);
             this.money_status = this.game.add.bitmapText(50, 60+(26*5), 'dosfont', 'Money: $' + money.toFixed(2), 26);
 
+            this.day_status = this.game.add.bitmapText(700, 60, 'dosfont', 'Day: ' + day, 26);
+
             this.line1 = this.game.add.sprite(50, 60+(26*6), 'divider');
             this.line1.scale.x = 0.3;
             this.line1.scale.y = 0.3;
 
+            this.crew_statuses = game.add.group();
             for(var i=0; i < crew.length; i++) {
-                this.crew_statuses.push(this.game.add.bitmapText(50, 236+(26*i), 'dosfont', crew[i].name + ": " + crew[i].status, 26));
+                this.status = this.game.add.bitmapText(50, 236+(26*i), 'dosfont', crew[i].name + ": " + crew[i].status, 26);
+                this.crew_statuses.add(this.status);
             }
 
             this.rest = this.game.add.sprite(50, 380, 'rest');
+            this.rest.inputEnabled = true;
+            this.rest.events.onInputOver.add(this.fade, this);
+            this.rest.events.onInputDown.add(this.enableRest, this);
+            this.rest.events.onInputOut.add(this.fade, this);
 
             this.food = this.game.add.sprite(50, 414, 'food');
             this.food.inputEnabled = true;
             this.food.events.onInputOver.add(this.fade, this);
             this.food.events.onInputDown.add(this.gotoAsteroids, this);
             this.food.events.onInputOut.add(this.fade, this);
+
+            this.game.add.bitmapText(700, 98, 'dosfont', 'Rations', 26);
+
+            this.meal_buttons = game.add.group();
+            for(var i=0; i<3;  i++) {
+                this.meal_button = this.game.add.sprite(700, 126+(i*34), (i+1)+'meals')
+                this.meal_buttons.add(this.meal_button);
+                this.meal_button.inputEnabled = true;
+                this.meal_button.events.onInputOver.add(this.fade, this);
+                this.meal_button.events.onInputDown.add(this.mealChanged, {amount: i+1});
+                this.meal_button.events.onInputOut.add(this.fade, this);
+
+                if(i==2) { this.meal_button.tint = 0x555555; }
+            }
         },
 
         update: function() {
             this.stars.tilePosition.x += 0.5;
             this.bg.tilePosition.x -= 0.5;
+
+            for(var i=0; i<3; i++){
+                if(i == meals-1){
+                    this.meal_buttons.getAt(i).tint = 0x555555;
+                } else {
+                    this.meal_buttons.getAt(i).tint = 0xffffff;
+                }
+            }
+
+
+            if(!this.resting){
+                this.timer += this.game.time.elapsed;
+                if (this.timer >= 500) {
+                    this.timer = 0;
+                    this.distanceTraveled += .05; //TODO: update for speed
+                    if(this.distanceTraveled > 58) { this.distanceTraveled = 58; }
+                    this.shipProgress.x = 750 - (this.distanceTraveled/58 * 700);
+                }
+            }
+
+            if (this.resting) {
+                this.restTimer += this.game.time.elapsed;
+                if(this.restTimer >= 5000) {
+                    this.restTimer = 0;
+                    this.resting = false;
+                    this.rest.tint = 0xffffff;
+                    //TODO: update statuses after resting
+                }
+            }
+
+            this.dayTimer += this.game.time.elapsed;
+            if (this.dayTimer >= 5000) {
+                this.dayTimer = 0;
+                day++;
+
+                for (var i=0; i < crew.length; i++){
+                    if ( food > 0 && crew[i].hp > 0) {
+                        // TODO: update for rations
+                        food -= meals;
+                        if (food < 0) { food = 0; }
+                        if (crew[i].status == "starving") { crew[i].status = "healthy";}
+                    } else if (food == 0 && crew[i].hp > 0) {
+                        crew[i].hp--;
+                        crew[i].status = "starving";
+                    } else {
+                        crew[i].status = "dead";
+                    }
+
+                    this.crew_statuses.getAt(i).setText(crew[i].name + ": " + crew[i].status);
+                }
+
+                this.day_status.setText('Day:' + day);
+                this.food_status.setText('Food: ' + food);
+            }
         },
 
         gotoAsteroids: function() {
@@ -665,6 +754,17 @@ window.onload = function() {
             } else {
                 sprite.alpha = 1;
             }
+        },
+
+        enableRest: function() {
+            if(!this.resting) {
+                this.resting = true;
+                this.rest.tint = 0x555555;
+            }
+        },
+
+        mealChanged: function() {
+            meals = this.amount;
         }
     };
 
