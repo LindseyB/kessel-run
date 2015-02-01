@@ -11,6 +11,7 @@ window.onload = function() {
     var crew = [];
     var day = 0;
     var meals = 3;
+    var speed = 0.05;
 
     KRGame.StateTitle = function (game) {
         this.title;
@@ -203,7 +204,7 @@ window.onload = function() {
 
         submitChoice: function() {
             name = "Cpt. " + this.name;
-            crew.push({name: name, status: "healthy", hp: 20});
+            crew.push({name: name, status: "healthy", hp: 7});
             this.state.start('StateParty');
         },
 
@@ -285,7 +286,7 @@ window.onload = function() {
         },
 
         submitChoice: function() {
-            crew.push({name: this.members[this.current_member], status: "healthy", hp: 20})
+            crew.push({name: this.members[this.current_member], status: "healthy", hp: 7})
             if (this.current_member < 4) {
                 this.current_member++;
                 this.cursor.y += 32;
@@ -604,6 +605,7 @@ window.onload = function() {
         this.day_status;
         this.resting = false;
         this.meal_buttons;
+        this.speed_buttons;
     };
 
     KRGame.StateTravel.prototype = {
@@ -618,6 +620,9 @@ window.onload = function() {
             this.game.load.image('1meals', 'assets/1meal.png');
             this.game.load.image('2meals', 'assets/2meals.png');
             this.game.load.image('3meals', 'assets/3meals.png');
+            this.game.load.image('speed1', 'assets/slow.png');
+            this.game.load.image('speed2', 'assets/moderate.png');
+            this.game.load.image('speed3', 'assets/fast.png');
         },
 
         create: function() {
@@ -673,8 +678,8 @@ window.onload = function() {
             this.game.add.bitmapText(700, 98, 'dosfont', 'Rations', 26);
 
             this.meal_buttons = game.add.group();
-            for(var i=0; i<3;  i++) {
-                this.meal_button = this.game.add.sprite(700, 126+(i*34), (i+1)+'meals')
+            for(var i=0; i<3; i++) {
+                this.meal_button = this.game.add.sprite(700, 126+(i*34), (i+1)+'meals');
                 this.meal_buttons.add(this.meal_button);
                 this.meal_button.inputEnabled = true;
                 this.meal_button.events.onInputOver.add(this.fade, this);
@@ -683,11 +688,25 @@ window.onload = function() {
 
                 if(i==2) { this.meal_button.tint = 0x555555; }
             }
+
+            this.game.add.bitmapText(700, 230, 'dosfont', 'Speed', 26);
+
+            this.speed_buttons = game.add.group();
+            for(var i=0; i<3; i++) {
+                this.speed_button = this.game.add.sprite(700, 256+(i*34), 'speed'+(i+1));
+                this.speed_buttons.add(this.speed_button);
+                this.speed_button.inputEnabled = true;
+                this.speed_button.events.onInputOver.add(this.fade, this);
+                this.speed_button.events.onInputDown.add(this.speedChanged, {index: i});
+                this.speed_button.events.onInputOut.add(this.fade, this);
+
+                if(i==2) { this.speed_button.tint = 0x555555; }
+            }
         },
 
         update: function() {
-            this.stars.tilePosition.x += 0.5;
-            this.bg.tilePosition.x -= 0.5;
+            this.stars.tilePosition.x += speed*100;
+            this.bg.tilePosition.x -= speed*100;
 
             for(var i=0; i<3; i++){
                 if(i == meals-1){
@@ -697,12 +716,21 @@ window.onload = function() {
                 }
             }
 
+            this.speed_buttons.setAll('tint', 0xffffff);
+            if(speed == 0.03){
+                this.speed_buttons.getAt(0).tint = 0x555555;
+            } else if (speed == 0.04) {
+                this.speed_buttons.getAt(1).tint = 0x555555;
+            } else {
+                this.speed_buttons.getAt(2).tint = 0x555555;
+            }
+
 
             if(!this.resting){
                 this.timer += this.game.time.elapsed;
                 if (this.timer >= 500) {
                     this.timer = 0;
-                    this.distanceTraveled += .05; //TODO: update for speed
+                    this.distanceTraveled += speed;
                     if(this.distanceTraveled > 58) { this.distanceTraveled = 58; }
                     this.shipProgress.x = 750 - (this.distanceTraveled/58 * 700);
                 }
@@ -725,7 +753,6 @@ window.onload = function() {
 
                 for (var i=0; i < crew.length; i++){
                     if ( food > 0 && crew[i].hp > 0) {
-                        // TODO: update for rations
                         food -= meals;
                         if (food < 0) { food = 0; }
                         if (crew[i].status == "starving") { crew[i].status = "healthy";}
@@ -741,6 +768,18 @@ window.onload = function() {
 
                 this.day_status.setText('Day:' + day);
                 this.food_status.setText('Food: ' + food);
+            }
+
+            this.gameover = true;
+            for (var i=0; i < crew.length; i++){
+                if (crew[i].status != "dead") {
+                    this.gameover = false;
+                    break;
+                }
+            }
+
+            if(this.gameover) {
+                this.gotoGameOver();
             }
         },
 
@@ -765,6 +804,20 @@ window.onload = function() {
 
         mealChanged: function() {
             meals = this.amount;
+        },
+
+        speedChanged: function() {
+            if(this.index==0){
+                speed = 0.03;
+            } else if (this.index==1) {
+                speed = 0.04;
+            } else {
+                speed = 0.05;
+            }
+        },
+
+        gotoGameOver: function() {
+            this.state.start('StateGameOver');
         }
     };
 
@@ -973,6 +1026,65 @@ window.onload = function() {
         }
     };
 
+    KRGame.StateGameOver = {};
+
+    KRGame.StateGameOver = function (game) {
+        this.timer = 0;
+    };
+
+    KRGame.StateGameOver.prototype = {
+        preload: function() {
+            this.game.load.bitmapFont('dosfont', 'assets/font/dos.png', 'assets/font/dos.fnt');
+            this.game.load.image('background', 'assets/background.png');
+            this.game.load.image('stars', 'assets/stars.png');
+            this.game.load.image('grave', 'assets/grave.png');
+        },
+
+        create: function() {
+            this.bg = this.game.add.tileSprite(0, 0, 800, 600, 'background');
+            this.stars = this.game.add.tileSprite(0, 0, 800, 600, 'stars');
+            this.grave = game.add.sprite(game.world.centerX, game.world.centerY, 'grave');
+            this.grave.anchor.setTo(0.5, 0.5);
+
+            this.game_over_text = this.game.add.bitmapText(game.world.centerX, game.world.centerY, 'dosfont', 'Game Over', 50);
+            this.game_over_text.x = this.game.width / 2 - this.game_over_text.textWidth / 2;
+            this.game_over_text.tint = 0x111111;
+
+            this.press_enter_text = this.game.add.bitmapText(game.world.centerX, game.world.centerY+60, 'dosfont', 'Press Enter to Retry', 26);
+            this.press_enter_text.x = this.game.width / 2 - this.press_enter_text.textWidth / 2;
+            this.press_enter_text.tint = 0x111111;
+
+            game.input.keyboard.addKeyCapture([ Phaser.Keyboard.ENTER ]);
+            this.enter = game.input.keyboard.addKey(Phaser.Keyboard.ENTER);
+            this.enter.onDown.add(this.retry, this);
+        },
+
+        update: function() {
+            this.stars.tilePosition.x += 0.5;
+            this.bg.tilePosition.x -= 0.5;
+
+            this.timer += this.game.time.elapsed;
+            if (this.timer >= 500) {
+                this.timer = 0;
+                this.press_enter_text.visible = !this.press_enter_text.visible;
+            }
+        },
+
+        retry: function() {
+            money = 10000;
+            solar = 0;
+            food = 0;
+            clothing = 0;
+            parts = 0;
+            spice = 0;
+            crew = [];
+            day = 0;
+            meals = 3;
+            speed = 0.05;
+            this.state.start('StateJob');
+        }
+    };
+
     var game = new Phaser.Game(800, 600, Phaser.AUTO, 'kessel-run-container');
 
     game.state.add('StateTitle', KRGame.StateTitle);
@@ -983,6 +1095,7 @@ window.onload = function() {
     game.state.add('StateStartStation', KRGame.StateStartStation);
     game.state.add('StateTravel', KRGame.StateTravel);
     game.state.add('StateAsteroids', KRGame.StateAsteroids);
+    game.state.add('StateGameOver', KRGame.StateGameOver);
 
     game.state.start('StateTitle');
 };
