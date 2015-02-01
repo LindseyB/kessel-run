@@ -746,10 +746,14 @@ window.onload = function() {
 
             this.cursors = this.game.input.keyboard.createCursorKeys();
             this.game.input.keyboard.addKeyCapture([
+                Phaser.Keyboard.Q,
                 Phaser.Keyboard.SPACEBAR,
                 Phaser.Keyboard.W,
                 Phaser.Keyboard.A,
                 Phaser.Keyboard.D ]);
+
+            this.escape = game.input.keyboard.addKey(Phaser.Keyboard.Q);
+            this.escape.onDown.add(this.gotoTravel, this);
         },
 
         update: function() {
@@ -833,6 +837,7 @@ window.onload = function() {
             this.explosionSound.play();
             bullet.kill();
             asteroid.kill();
+            food += Math.floor(Math.random() * 5) + 1;
         },
 
         playerHitHander: function(ship, asteroid) {
@@ -845,6 +850,10 @@ window.onload = function() {
             if (this.lives.countLiving() < 1){
                 this.state.start('StateTravel');
             }
+        },
+
+        gotoTravel: function() {
+            this.state.start('StateTravel');
         },
 
         animateHurt: function() {
