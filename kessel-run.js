@@ -781,6 +781,10 @@ window.onload = function() {
             if(this.gameover) {
                 this.gotoGameOver();
             }
+
+            if(this.distanceTraveled == 58) {
+                this.gotoWin();
+            }
         },
 
         gotoAsteroids: function() {
@@ -818,6 +822,10 @@ window.onload = function() {
 
         gotoGameOver: function() {
             this.state.start('StateGameOver');
+        },
+
+        gotoWin: function() {
+            this.state.start('StateWin');
         }
     };
 
@@ -1085,6 +1093,67 @@ window.onload = function() {
         }
     };
 
+    KRGame.StateWin = {};
+
+    KRGame.StateWin = function (game) {
+        this.timer = 0;
+    };
+
+    KRGame.StateWin.prototype = {
+        preload: function() {
+            this.game.load.image('station', 'assets/station.png');
+            this.game.load.audio('music', 'assets/audio/SpaceGone-8bit-Chiptune-Song-36.mp3');
+            this.game.load.bitmapFont('dosfont', 'assets/font/dos.png', 'assets/font/dos.fnt');
+        },
+
+        create: function() {
+            this.station = this.game.add.sprite(0,0, 'station');
+            this.music = this.game.add.audio('music');
+            this.music.loop = true;
+            this.music.play();
+
+            this.game.add.bitmapText(50, 100, 'dosfont','Results', 26);
+            this.game.add.bitmapText(50, 100+30, 'dosfont','Solar Panels: ' + solar + ' X 50 = ' + solar*50, 26);
+            this.game.add.bitmapText(50, 100+(30*2), 'dosfont','Food: ' + solar + ' X 10 = ' + food*10, 26);
+            this.game.add.bitmapText(50, 100+(30*3), 'dosfont','Clothing: ' + solar + ' X 50 = ' + clothing*50, 26);
+            this.game.add.bitmapText(50, 100+(30*4), 'dosfont','Spare Parts: ' + parts + ' X 50 = ' + parts*50, 26);
+            this.game.add.bitmapText(50, 100+(30*5), 'dosfont','Spice: ' + spice + ' X 100 = ' + spice*100, 26);
+            this.game.add.bitmapText(50, 100+(30*6), 'dosfont','Money: ' + money, 26);
+            this.game.add.bitmapText(50, 100+(30*7), 'dosfont', 'Days: -' + day, 26);
+
+            this.game.add.bitmapText(50, 340, 'dosfont', 'Score: ' + (solar*50 + food*10 + clothing*50 + parts*50 + spice*100 + money - day), 26);
+
+            this.play_again_text = this.game.add.bitmapText(game.world.centerX, 400, 'dosfont', 'Press Enter to Play Again');
+            this.play_again_text.x = this.game.width / 2 - this.play_again_text.textWidth / 2 - 100;
+
+            game.input.keyboard.addKeyCapture([ Phaser.Keyboard.ENTER ]);
+            this.enter = game.input.keyboard.addKey(Phaser.Keyboard.ENTER);
+            this.enter.onDown.add(this.retry, this);
+        },
+
+        update: function() {
+            this.timer += this.game.time.elapsed;
+            if (this.timer >= 500) {
+                this.timer = 0;
+                this.play_again_text.visible = !this.play_again_text.visible;
+            }
+        },
+
+        retry: function() {
+            money = 10000;
+            solar = 0;
+            food = 0;
+            clothing = 0;
+            parts = 0;
+            spice = 0;
+            crew = [];
+            day = 0;
+            meals = 3;
+            speed = 0.05;
+            this.state.start('StateJob');
+        }
+    };
+
     var game = new Phaser.Game(800, 600, Phaser.AUTO, 'kessel-run-container');
 
     game.state.add('StateTitle', KRGame.StateTitle);
@@ -1096,6 +1165,7 @@ window.onload = function() {
     game.state.add('StateTravel', KRGame.StateTravel);
     game.state.add('StateAsteroids', KRGame.StateAsteroids);
     game.state.add('StateGameOver', KRGame.StateGameOver);
+    game.state.add('StateWin', KRGame.StateWin);
 
     game.state.start('StateTitle');
 };
