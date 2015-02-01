@@ -855,65 +855,69 @@ window.onload = function() {
         },
 
         randomEvent: function() {
-            this.sicknessProb = 10 + (3/meals) + (5/clothing);
+            this.pick = (Math.floor(Math.random() * 3) + 1)
 
-            if ((Math.floor(Math.random() * 100) + 1) <= this.sicknessProb) {
-                this.crewIndex = Math.floor(Math.random() * crew.length);
-                this.sickPerson = crew[this.crewIndex];
-                this.sickPerson.status = this.sicknesses[Math.floor(Math.random() * this.sicknesses.length)]
+            if (this.pick == 1) {
+                this.sicknessProb = 10 + (3/meals) + (5/clothing);
 
-                this.message.setText(this.sickPerson.name + " has come down with " + this.sickPerson.status);
-                this.crew_statuses.getAt(this.crewIndex).setText(crew[this.crewIndex].name + ": " + crew[this.crewIndex].status);
-            }
+                if ((Math.floor(Math.random() * 100) + 1) <= this.sicknessProb) {
+                    this.crewIndex = Math.floor(Math.random() * crew.length);
+                    this.sickPerson = crew[this.crewIndex];
+                    this.sickPerson.status = this.sicknesses[Math.floor(Math.random() * this.sicknesses.length)]
 
-            this.brokenPartProb = 10 + (speed*100);
-            if (job == 3) { this.brokenPartProb -= 5; }
-
-            if ((Math.floor(Math.random() * 100) + 1) <= this.brokenPartProb) {
-                if (parts > 0) {
-                    parts--;
-                    this.parts_status.setText("Spare Parts: " + parts);
-                    this.message.setText("One of your solar panels broke, \nbut you were able to replace it with a spare.")
-                } else if (solar > 0) {
-                    solar--;
-                    this.solar_status.setText("Solar Panels: " + solar);
-                    this.message.setText("One of your solar panels broke, \nbut you were unable to replace it.")
+                    this.message.setText(this.sickPerson.name + " has come down with " + this.sickPerson.status);
+                    this.crew_statuses.getAt(this.crewIndex).setText(crew[this.crewIndex].name + ": " + crew[this.crewIndex].status);
                 }
-            }
+            } else if (this.pick == 2) {
+                this.brokenPartProb = 10 + (speed*100);
+                if (job == 3) { this.brokenPartProb -= 5; }
 
-            this.stolenProb = 10;
-            if ((Math.floor(Math.random() * 100) + 1) <= this.stolenProb) {
-                this.stolen = (Math.floor(Math.random() * 5) + 1);
-                if (this.stolen == 1 && solar > 0) {
-                    if(parts > 0) {
+                if ((Math.floor(Math.random() * 100) + 1) <= this.brokenPartProb) {
+                    if (parts > 0) {
                         parts--;
                         this.parts_status.setText("Spare Parts: " + parts);
-                        this.message.setText("Space pirates stole a solar panel, \nbut you were able to replace it with a spare.")
-                    } else {
+                        this.message.setText("One of your solar panels broke, \nbut you were able to replace it with a spare.")
+                    } else if (solar > 0) {
                         solar--;
                         this.solar_status.setText("Solar Panels: " + solar);
-                        this.message.setText("Space pirates stole a solar panel, \nbut you were unable to replace it.")
+                        this.message.setText("One of your solar panels broke, \nbut you were unable to replace it.")
                     }
-                } else if (this.stolen == 2 && food > 0) {
-                    food -= 100;
-                    if (food < 0) { food = 0; }
+                }
+            } else {
+                this.stolenProb = 10;
+                if ((Math.floor(Math.random() * 100) + 1) <= this.stolenProb) {
+                    this.stolen = (Math.floor(Math.random() * 5) + 1);
+                    if (this.stolen == 1 && solar > 0) {
+                        if(parts > 0) {
+                            parts--;
+                            this.parts_status.setText("Spare Parts: " + parts);
+                            this.message.setText("Space pirates stole a solar panel, \nbut you were able to replace it with a spare.")
+                        } else {
+                            solar--;
+                            this.solar_status.setText("Solar Panels: " + solar);
+                            this.message.setText("Space pirates stole a solar panel, \nbut you were unable to replace it.")
+                        }
+                    } else if (this.stolen == 2 && food > 0) {
+                        food -= 100;
+                        if (food < 0) { food = 0; }
 
-                    this.food_status.setText("Food: " + food);
-                    this.message.setText("Space pirates stole some food.");
-                } else if (this.stolen == 3 && clothing > 0) {
-                    clothing--;
-                    this.clothing_status.setText("Clothing: " + clothing);
-                    this.message.setText("Space pirates stole clothing.");
-                } else if (this.stolen == 4 && parts > 0) {
-                    parts--;
-                    this.parts_status.setText("Spare Parts: " + parts);
-                    this.message.setText("Space pirates stole spare parts.");
-                } else if (this.stolen == 5 && spice > 0) {
-                    spice-=10;
-                    if (spice < 0) { spice = 0; }
+                        this.food_status.setText("Food: " + food);
+                        this.message.setText("Space pirates stole some food.");
+                    } else if (this.stolen == 3 && clothing > 0) {
+                        clothing--;
+                        this.clothing_status.setText("Clothing: " + clothing);
+                        this.message.setText("Space pirates stole clothing.");
+                    } else if (this.stolen == 4 && parts > 0) {
+                        parts--;
+                        this.parts_status.setText("Spare Parts: " + parts);
+                        this.message.setText("Space pirates stole spare parts.");
+                    } else if (this.stolen == 5 && spice > 0) {
+                        spice-=10;
+                        if (spice < 0) { spice = 0; }
 
-                    this.spice_status.setText("Spice: " + spice);
-                    this.message.setText("Someone in the crew has been dipping into the spice supply.");
+                        this.spice_status.setText("Spice: " + spice);
+                        this.message.setText("Someone in the crew has been dipping into the spice supply.");
+                    }
                 }
             }
         }
