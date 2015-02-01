@@ -111,6 +111,7 @@ window.onload = function() {
         submitChoice: function() {
             if (this.choice != -1) {
                 job = this.choice;
+                if (job == 1) { money += 5000; }
                 this.state.start('StateCaptain');
             }
         },
@@ -594,6 +595,8 @@ window.onload = function() {
         this.spice_status;
         this.crew_statuses = [];
         this.rest;
+        this.distanceTraveled = 0;
+        this.timer = 0;
     };
 
     KRGame.StateTravel.prototype = {
@@ -653,6 +656,15 @@ window.onload = function() {
         update: function() {
             this.stars.tilePosition.x += 0.5;
             this.bg.tilePosition.x -= 0.5;
+
+            this.timer += this.game.time.elapsed;
+            if (this.timer >= 500) {
+                this.timer = 0;
+                this.distanceTraveled += 1; //TODO: change this
+                if(this.distanceTraveled > 58) { this.distanceTraveled = 58; }
+                this.shipProgress.x = 750 - (this.distanceTraveled/58 * 700);
+                console.log(this.shipProgress.x);
+            }
         },
 
         gotoAsteroids: function() {
