@@ -594,7 +594,7 @@ window.onload = function() {
         this.clothing_status;
         this.parts_status;
         this.spice_status;
-        this.crew_statuses = [];
+        this.crew_statuses;
         this.rest;
         this.distanceTraveled = 0;
         this.timer = 0;
@@ -645,8 +645,10 @@ window.onload = function() {
             this.line1.scale.x = 0.3;
             this.line1.scale.y = 0.3;
 
+            this.crew_statuses = game.add.group();
             for(var i=0; i < crew.length; i++) {
-                this.crew_statuses.push(this.game.add.bitmapText(50, 236+(26*i), 'dosfont', crew[i].name + ": " + crew[i].status, 26));
+                this.status = this.game.add.bitmapText(50, 236+(26*i), 'dosfont', crew[i].name + ": " + crew[i].status, 26);
+                this.crew_statuses.add(this.status);
             }
 
             this.rest = this.game.add.sprite(50, 380, 'rest');
@@ -665,13 +667,13 @@ window.onload = function() {
             this.timer += this.game.time.elapsed;
             if (this.timer >= 500) { //TODO: only move if not resting
                 this.timer = 0;
-                this.distanceTraveled += .01; //TODO: update for speed
+                this.distanceTraveled += .05; //TODO: update for speed
                 if(this.distanceTraveled > 58) { this.distanceTraveled = 58; }
                 this.shipProgress.x = 750 - (this.distanceTraveled/58 * 700);
             }
 
             this.dayTimer += this.game.time.elapsed;
-            if (this.dayTimer >= 1000) {
+            if (this.dayTimer >= 5000) {
                 this.dayTimer = 0;
                 day++;
 
@@ -681,14 +683,14 @@ window.onload = function() {
                         food -= 3;
                         if (food < 0) { food = 0; }
                         if (crew[i].status == "starving") { crew[i].status = "healthy";}
-                    } else if (food == 0) {
+                    } else if (food == 0 && crew[i].hp > 0) {
                         crew[i].hp--;
                         crew[i].status = "starving";
                     } else {
                         crew[i].status = "dead";
                     }
 
-                    this.crew_statuses[i].setText(crew[i].name + ": " + crew[i].status);
+                    this.crew_statuses.getAt(i).setText(crew[i].name + ": " + crew[i].status);
                 }
 
                 this.day_status.setText('Day:' + day);
