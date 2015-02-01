@@ -841,6 +841,10 @@ window.onload = function() {
             if (live) { live.kill(); }
             this.hurt = true;
             this.hurtDuration = this.game.time.now + 800;
+
+            if (this.lives.countLiving() < 1){
+                this.state.start('StateTravel');
+            }
         },
 
         animateHurt: function() {
