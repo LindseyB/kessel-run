@@ -606,6 +606,7 @@ window.onload = function() {
         this.resting = false;
         this.meal_buttons;
         this.speed_buttons;
+        this.sicknesses = ['Space Madness', 'Space Dysentery', 'Space Cholera', 'Exhaustion'];
     };
 
     KRGame.StateTravel.prototype = {
@@ -702,11 +703,22 @@ window.onload = function() {
 
                 if(i==2) { this.speed_button.tint = 0x555555; }
             }
+
+            this.message = this.game.add.bitmapText(100, 500, 'dosfont', "", 26);
         },
 
         update: function() {
-            this.stars.tilePosition.x += speed*100;
-            this.bg.tilePosition.x -= speed*100;
+            if(solar == 0 && !this.resting) {
+                speed = 0.03;
+            }
+
+            if(!this.resting) {
+                this.stars.tilePosition.x += speed*100;
+                this.bg.tilePosition.x -= speed*100;
+            } else {
+                this.stars.tilePosition.x += 0.5;
+                this.bg.tilePosition.x -= 0.5;
+            }
 
             for(var i=0; i<3; i++){
                 if(i == meals-1){
@@ -742,7 +754,18 @@ window.onload = function() {
                     this.restTimer = 0;
                     this.resting = false;
                     this.rest.tint = 0xffffff;
-                    //TODO: update statuses after resting
+
+                    this.probabilityHealing = 50;
+                    if (job == 2) { this.probabilityHealing += 20; }
+
+                    for (var i=0; i < crew.length; i++) {
+                        if(crew[i].status != "starving" || crew[i].status != "healthy") {
+                            if ((Math.floor(Math.random() * 100) + 1) <= this.probabilityHealing) {
+                                crew[i].status = "healthy";
+                                this.crew_statuses.getAt(i).setText(crew[i].name + ": " + crew[i].status);
+                            }
+                        }
+                    }
                 }
             }
 
@@ -750,15 +773,18 @@ window.onload = function() {
             if (this.dayTimer >= 5000) {
                 this.dayTimer = 0;
                 day++;
+                this.randomEvent();
 
                 for (var i=0; i < crew.length; i++){
+                    if (crew[i].status != "starving" && crew[i].status != "healthy") { crew[i].hp--; }
+
                     if ( food > 0 && crew[i].hp > 0) {
                         food -= meals;
                         if (food < 0) { food = 0; }
-                        if (crew[i].status == "starving") { crew[i].status = "healthy";}
+                        if (crew[i].status == "starving") { crew[i].status = "healthy"; }
                     } else if (food == 0 && crew[i].hp > 0) {
                         crew[i].hp--;
-                        crew[i].status = "starving";
+                        if (crew[i].status == "healthy") { crew[i].status = "starving"; }
                     } else {
                         crew[i].status = "dead";
                     }
@@ -826,6 +852,74 @@ window.onload = function() {
 
         gotoWin: function() {
             this.state.start('StateWin');
+        },
+
+        randomEvent: function() {
+            this.pick = (Math.floor(Math.random() * 3) + 1)
+
+            if (this.pick == 1) {
+                this.sicknessProb = 10 + (3/meals) + (5/clothing);
+
+                if ((Math.floor(Math.random() * 100) + 1) <= this.sicknessProb) {
+                    this.crewIndex = Math.floor(Math.random() * crew.length);
+                    this.sickPerson = crew[this.crewIndex];
+                    this.sickPerson.status = this.sicknesses[Math.floor(Math.random() * this.sicknesses.length)]
+
+                    this.message.setText(this.sickPerson.name + " has come down with " + this.sickPerson.status);
+                    this.crew_statuses.getAt(this.crewIndex).setText(crew[this.crewIndex].name + ": " + crew[this.crewIndex].status);
+                }
+            } else if (this.pick == 2) {
+                this.brokenPartProb = 10 + (speed*100);
+                if (job == 3) { this.brokenPartProb -= 5; }
+
+                if ((Math.floor(Math.random() * 100) + 1) <= this.brokenPartProb) {
+                    if (parts > 0) {
+                        parts--;
+                        this.parts_status.setText("Spare Parts: " + parts);
+                        this.message.setText("One of your solar panels broke, \nbut you were able to replace it with a spare.")
+                    } else if (solar > 0) {
+                        solar--;
+                        this.solar_status.setText("Solar Panels: " + solar);
+                        this.message.setText("One of your solar panels broke, \nbut you were unable to replace it.")
+                    }
+                }
+            } else {
+                this.stolenProb = 10;
+                if ((Math.floor(Math.random() * 100) + 1) <= this.stolenProb) {
+                    this.stolen = (Math.floor(Math.random() * 5) + 1);
+                    if (this.stolen == 1 && solar > 0) {
+                        if(parts > 0) {
+                            parts--;
+                            this.parts_status.setText("Spare Parts: " + parts);
+                            this.message.setText("Space pirates stole a solar panel, \nbut you were able to replace it with a spare.")
+                        } else {
+                            solar--;
+                            this.solar_status.setText("Solar Panels: " + solar);
+                            this.message.setText("Space pirates stole a solar panel, \nbut you were unable to replace it.")
+                        }
+                    } else if (this.stolen == 2 && food > 0) {
+                        food -= 100;
+                        if (food < 0) { food = 0; }
+
+                        this.food_status.setText("Food: " + food);
+                        this.message.setText("Space pirates stole some food.");
+                    } else if (this.stolen == 3 && clothing > 0) {
+                        clothing--;
+                        this.clothing_status.setText("Clothing: " + clothing);
+                        this.message.setText("Space pirates stole clothing.");
+                    } else if (this.stolen == 4 && parts > 0) {
+                        parts--;
+                        this.parts_status.setText("Spare Parts: " + parts);
+                        this.message.setText("Space pirates stole spare parts.");
+                    } else if (this.stolen == 5 && spice > 0) {
+                        spice-=10;
+                        if (spice < 0) { spice = 0; }
+
+                        this.spice_status.setText("Spice: " + spice);
+                        this.message.setText("Someone in the crew has been dipping into the spice supply.");
+                    }
+                }
+            }
         }
     };
 
