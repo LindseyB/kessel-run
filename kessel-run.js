@@ -705,8 +705,8 @@ window.onload = function() {
         },
 
         update: function() {
-            this.stars.tilePosition.x += 0.5;
-            this.bg.tilePosition.x -= 0.5;
+            this.stars.tilePosition.x += speed*100;
+            this.bg.tilePosition.x -= speed*100;
 
             for(var i=0; i<3; i++){
                 if(i == meals-1){
@@ -715,6 +715,7 @@ window.onload = function() {
                     this.meal_buttons.getAt(i).tint = 0xffffff;
                 }
             }
+
             this.speed_buttons.setAll('tint', 0xffffff);
             if(speed == 0.03){
                 this.speed_buttons.getAt(0).tint = 0x555555;
