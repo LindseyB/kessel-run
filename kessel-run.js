@@ -599,7 +599,9 @@ window.onload = function() {
         this.distanceTraveled = 0;
         this.timer = 0;
         this.dayTimer = 0;
+        this.restTimer = 0;
         this.day_status;
+        this.resting = false;
     };
 
     KRGame.StateTravel.prototype = {
@@ -652,6 +654,10 @@ window.onload = function() {
             }
 
             this.rest = this.game.add.sprite(50, 380, 'rest');
+            this.rest.inputEnabled = true;
+            this.rest.events.onInputOver.add(this.fade, this);
+            this.rest.events.onInputDown.add(this.enableRest, this);
+            this.rest.events.onInputOut.add(this.fade, this);
 
             this.food = this.game.add.sprite(50, 414, 'food');
             this.food.inputEnabled = true;
@@ -664,12 +670,25 @@ window.onload = function() {
             this.stars.tilePosition.x += 0.5;
             this.bg.tilePosition.x -= 0.5;
 
-            this.timer += this.game.time.elapsed;
-            if (this.timer >= 500) { //TODO: only move if not resting
-                this.timer = 0;
-                this.distanceTraveled += .05; //TODO: update for speed
-                if(this.distanceTraveled > 58) { this.distanceTraveled = 58; }
-                this.shipProgress.x = 750 - (this.distanceTraveled/58 * 700);
+
+            if(!this.resting){
+                this.timer += this.game.time.elapsed;
+                if (this.timer >= 500) {
+                    this.timer = 0;
+                    this.distanceTraveled += .05; //TODO: update for speed
+                    if(this.distanceTraveled > 58) { this.distanceTraveled = 58; }
+                    this.shipProgress.x = 750 - (this.distanceTraveled/58 * 700);
+                }
+            }
+
+            if (this.resting) {
+                this.restTimer += this.game.time.elapsed;
+                if(this.restTimer >= 5000) {
+                    this.restTimer = 0;
+                    this.resting = false;
+                    this.rest.tint = 0xffffff;
+                    //TODO: update statuses after resting
+                }
             }
 
             this.dayTimer += this.game.time.elapsed;
@@ -707,6 +726,13 @@ window.onload = function() {
                 sprite.alpha = 0.8;
             } else {
                 sprite.alpha = 1;
+            }
+        },
+
+        enableRest: function() {
+            if(!this.resting) {
+                this.resting = true;
+                this.rest.tint = 0x555555;
             }
         }
     };
