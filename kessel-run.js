@@ -204,7 +204,7 @@ window.onload = function() {
 
         submitChoice: function() {
             name = "Cpt. " + this.name;
-            crew.push({name: name, status: "healthy", hp: 20});
+            crew.push({name: name, status: "healthy", hp: 7});
             this.state.start('StateParty');
         },
 
@@ -286,7 +286,7 @@ window.onload = function() {
         },
 
         submitChoice: function() {
-            crew.push({name: this.members[this.current_member], status: "healthy", hp: 20})
+            crew.push({name: this.members[this.current_member], status: "healthy", hp: 7})
             if (this.current_member < 4) {
                 this.current_member++;
                 this.cursor.y += 32;
@@ -769,6 +769,18 @@ window.onload = function() {
                 this.day_status.setText('Day:' + day);
                 this.food_status.setText('Food: ' + food);
             }
+
+            this.gameover = true;
+            for (var i=0; i < crew.length; i++){
+                if (crew[i].status != "dead") {
+                    this.gameover = false;
+                    break;
+                }
+            }
+
+            if(this.gameover) {
+                this.gotoGameOver();
+            }
         },
 
         gotoAsteroids: function() {
@@ -802,6 +814,10 @@ window.onload = function() {
             } else {
                 speed = 0.05;
             }
+        },
+
+        gotoGameOver: function() {
+            this.state.start('StateGameOver');
         }
     };
 
@@ -1010,6 +1026,65 @@ window.onload = function() {
         }
     };
 
+    KRGame.StateGameOver = {};
+
+    KRGame.StateGameOver = function (game) {
+        this.timer = 0;
+    };
+
+    KRGame.StateGameOver.prototype = {
+        preload: function() {
+            this.game.load.bitmapFont('dosfont', 'assets/font/dos.png', 'assets/font/dos.fnt');
+            this.game.load.image('background', 'assets/background.png');
+            this.game.load.image('stars', 'assets/stars.png');
+            this.game.load.image('grave', 'assets/grave.png');
+        },
+
+        create: function() {
+            this.bg = this.game.add.tileSprite(0, 0, 800, 600, 'background');
+            this.stars = this.game.add.tileSprite(0, 0, 800, 600, 'stars');
+            this.grave = game.add.sprite(game.world.centerX, game.world.centerY, 'grave');
+            this.grave.anchor.setTo(0.5, 0.5);
+
+            this.game_over_text = this.game.add.bitmapText(game.world.centerX, game.world.centerY, 'dosfont', 'Game Over', 50);
+            this.game_over_text.x = this.game.width / 2 - this.game_over_text.textWidth / 2;
+            this.game_over_text.tint = 0x111111;
+
+            this.press_enter_text = this.game.add.bitmapText(game.world.centerX, game.world.centerY+60, 'dosfont', 'Press Enter to Retry', 26);
+            this.press_enter_text.x = this.game.width / 2 - this.press_enter_text.textWidth / 2;
+            this.press_enter_text.tint = 0x111111;
+
+            game.input.keyboard.addKeyCapture([ Phaser.Keyboard.ENTER ]);
+            this.enter = game.input.keyboard.addKey(Phaser.Keyboard.ENTER);
+            this.enter.onDown.add(this.retry, this);
+        },
+
+        update: function() {
+            this.stars.tilePosition.x += 0.5;
+            this.bg.tilePosition.x -= 0.5;
+
+            this.timer += this.game.time.elapsed;
+            if (this.timer >= 500) {
+                this.timer = 0;
+                this.press_enter_text.visible = !this.press_enter_text.visible;
+            }
+        },
+
+        retry: function() {
+            money = 10000;
+            solar = 0;
+            food = 0;
+            clothing = 0;
+            parts = 0;
+            spice = 0;
+            crew = [];
+            day = 0;
+            meals = 3;
+            speed = 0.05;
+            this.state.start('StateJob');
+        }
+    };
+
     var game = new Phaser.Game(800, 600, Phaser.AUTO, 'kessel-run-container');
 
     game.state.add('StateTitle', KRGame.StateTitle);
@@ -1020,6 +1095,7 @@ window.onload = function() {
     game.state.add('StateStartStation', KRGame.StateStartStation);
     game.state.add('StateTravel', KRGame.StateTravel);
     game.state.add('StateAsteroids', KRGame.StateAsteroids);
+    game.state.add('StateGameOver', KRGame.StateGameOver);
 
     game.state.start('StateTitle');
 };
