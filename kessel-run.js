@@ -759,7 +759,7 @@ window.onload = function() {
                     if (job == 2) { this.probabilityHealing += 20; }
 
                     for (var i=0; i < crew.length; i++) {
-                        if(crew[i].status != "starving" || crew[i].status != "healthy") {
+                        if((crew[i].status != "starving" || crew[i].status != "healthy") && crew[i].hp > 0) {
                             if ((Math.floor(Math.random() * 100) + 1) <= this.probabilityHealing) {
                                 crew[i].status = "healthy";
                                 this.crew_statuses.getAt(i).setText(crew[i].name + ": " + crew[i].status);
@@ -1244,6 +1244,7 @@ window.onload = function() {
             day = 0;
             meals = 3;
             speed = 0.05;
+            this.music.stop();
             this.state.start('StateJob');
         }
     };
