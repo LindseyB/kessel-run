@@ -1244,6 +1244,7 @@ window.onload = function() {
             day = 0;
             meals = 3;
             speed = 0.05;
+            this.music.stop();
             this.state.start('StateJob');
         }
     };
